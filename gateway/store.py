@@ -9,12 +9,16 @@ from typing import Any
 
 
 DEFAULT_STATE = {
+    "employees": {},
     "agents": {},
+    "mandates": {},
     "actions": {},
     "data_policies": {},
     "blocks": {},
+    "approvals": {},
     "settings": {"risk_tolerance": "high", "system_risk_tolerances": {}},
     "revoked_tokens": {},
+    "used_tokens": {},
     "audit": [],
 }
 
@@ -29,8 +33,8 @@ class Store:
         if not self.path.exists():
             return json.loads(json.dumps(DEFAULT_STATE))
         data = json.loads(self.path.read_text(encoding="utf-8"))
-        state = {**json.loads(json.dumps(DEFAULT_STATE)), **data}
-        state["settings"] = {**DEFAULT_STATE["settings"], **data.get("settings", {})}
+        state = {**json.loads(json.dumps(DEFAULT_STATE)), **data,
+                 "settings": {**DEFAULT_STATE["settings"], **data.get("settings", {})}}
         return state
 
     def save(self) -> None:

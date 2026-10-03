@@ -1,0 +1,11 @@
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.pytest-tmp/
+.idea/
+
+# Local runtime state and secrets
+data/state.json
+data/state.json.tmp
+.env

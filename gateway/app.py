@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import os
 import secrets
+import time
 from pathlib import Path
 from typing import Any, Literal
 
@@ -32,6 +33,26 @@ class AgentUpsert(BaseModel):
     allowed_data_policies: list[str] = Field(default_factory=list)
 
 
+class EmployeeUpsert(BaseModel):
+    id: str = Field(min_length=1, max_length=100)
+    name: str = Field(min_length=1, max_length=200)
+    api_key: str | None = Field(default=None, min_length=16)
+    active: bool = True
+    roles: list[str] = Field(default_factory=list)
+
+
+class MandateUpsert(BaseModel):
+    id: str = Field(min_length=1, max_length=120)
+    employee_id: str = Field(min_length=1, max_length=100)
+    agent_id: str = Field(min_length=1, max_length=100)
+    active: bool = True
+    allowed_actions: list[str] = Field(default_factory=list)
+    allowed_data_policies: list[str] = Field(default_factory=list)
+    max_amount: float | None = Field(default=None, gt=0)
+    allowed_destinations: list[str] = Field(default_factory=list)
+    valid_until: int | None = None
+
+
 class ActionPolicy(BaseModel):
     id: str = Field(min_length=1, max_length=120)
     description: str = ""
@@ -43,6 +64,10 @@ class ActionPolicy(BaseModel):
     allowed_roles: list[str] = Field(default_factory=list)
     base_risk: Literal["low", "medium", "high", "critical"] = "medium"
     risk_rules: list[dict[str, Any]] = Field(default_factory=list)
+    approval_required: bool = False
+    approval_risk_levels: list[Literal["low", "medium", "high", "critical"]] = Field(default_factory=list)
+    allowed_purpose_codes: list[str] = Field(default_factory=list)
+    destination_field: str | None = None
 
 
 class DataPolicy(BaseModel):
@@ -55,11 +80,14 @@ class DataPolicy(BaseModel):
 
 
 class GatewayRequest(BaseModel):
+    request_id: str = Field(min_length=1, max_length=120)
     action: str
     params: dict[str, Any] = Field(default_factory=dict)
     data_policy: str | None = None
-    subject: dict[str, Any] = Field(default_factory=dict)
-    reason: str = ""
+    purpose_code: str = Field(min_length=1, max_length=120)
+    reason: str = Field(default="", max_length=1000)
+    mandate_id: str = Field(min_length=1, max_length=120)
+    approval_id: str | None = None
 
 
 class GatewayBatchRequest(BaseModel):
@@ -89,6 +117,19 @@ class BlockRule(BaseModel):
 class IntrospectionRequest(BaseModel):
     token: str
     token_type: Literal["action", "data_access"] | None = None
+
+
+class ConsumeActionRequest(BaseModel):
+    token: str
+    action: str
+    service: str
+    operation: str
+    params: dict[str, Any] = Field(default_factory=dict)
+
+
+class ApprovalDecision(BaseModel):
+    approver_id: str = Field(min_length=1, max_length=100)
+    reason: str = Field(default="", max_length=1000)
 
 
 class RevokeRequest(BaseModel):
@@ -193,6 +234,18 @@ ADMIN_UI_HTML = """
     <div id="actions"></div>
   </section>
 
+  <div class="grid" style="margin-top:16px">
+    <section class="card">
+      <h2>Human Approvals</h2>
+      <label>Approver ID</label><input id="approverId" value="risk-officer-demo">
+      <div id="approvals"></div>
+    </section>
+    <section class="card">
+      <h2>Delegated Mandates</h2>
+      <div id="mandates"></div>
+    </section>
+  </div>
+
   <section class="card" style="margin-top:16px">
     <h2>Odpowiedz API</h2>
     <pre id="output"></pre>
@@ -220,6 +273,10 @@ async function loadAll() {
     renderBlocks(blocks.blocks || []);
     const actions = await api('/admin/actions');
     renderActions(actions.actions || [], settings.settings.system_risk_tolerances || {});
+    const approvals = await api('/admin/approvals');
+    renderApprovals(approvals.approvals || []);
+    const mandates = await api('/admin/mandates');
+    renderMandates(mandates.mandates || []);
     setStatus('loaded');
   } catch (err) { setStatus(err.message, false); }
 }
@@ -260,6 +317,19 @@ function renderActions(actions, systemRisks) {
   if (!actions.length) { document.getElementById('actions').innerHTML = '<p>Brak akcji. Uruchom make bootstrap.</p>'; return; }
   document.getElementById('actions').innerHTML = '<table><tr><th>Action</th><th>System</th><th>Operation</th><th>Base risk</th><th>System tolerance</th></tr>' + actions.map(a => `<tr><td>${a.id}</td><td>${a.service}</td><td>${a.operation}</td><td>${a.base_risk}</td><td>${systemRisks[a.service] || '(global)'}</td></tr>`).join('') + '</table>';
 }
+async function decideApproval(id, decision) {
+  const body = { approver_id: document.getElementById('approverId').value, reason: 'Decision from hackathon Admin Hub' };
+  try { await api('/admin/approvals/' + encodeURIComponent(id) + '/' + decision, { method: 'POST', body: JSON.stringify(body) }); await loadAll(); }
+  catch (err) { setStatus(err.message, false); }
+}
+function renderApprovals(approvals) {
+  if (!approvals.length) { document.getElementById('approvals').innerHTML = '<p>Brak wnioskow.</p>'; return; }
+  document.getElementById('approvals').innerHTML = '<table><tr><th>Action</th><th>Risk</th><th>Status</th><th></th></tr>' + approvals.map(a => `<tr><td>${a.action}<br><small>${a.request_id}</small></td><td>${a.risk_level}</td><td>${a.status}</td><td>${a.status === 'pending' ? `<button onclick="decideApproval('${a.id}', 'approve')">Approve</button><button class="danger" onclick="decideApproval('${a.id}', 'deny')">Deny</button>` : ''}</td></tr>`).join('') + '</table>';
+}
+function renderMandates(mandates) {
+  if (!mandates.length) { document.getElementById('mandates').innerHTML = '<p>Brak mandatow.</p>'; return; }
+  document.getElementById('mandates').innerHTML = '<table><tr><th>ID</th><th>Employee / Agent</th><th>Limit</th><th>Active</th></tr>' + mandates.map(m => `<tr><td>${m.id}</td><td>${m.employee_id}<br>${m.agent_id}</td><td>${m.max_amount || '-'}</td><td>${m.active}</td></tr>`).join('') + '</table>';
+}
 loadAll();
 </script>
 </body>
@@ -268,7 +338,7 @@ loadAll();
 
 
 def create_app(store: Store | None = None) -> FastAPI:
-    app = FastAPI(title="Agent Gateway", version="0.1.0")
+    app = FastAPI(title="WWGateWaySolution", version="0.2.0-mvp")
     app.state.store = store or Store(STATE_PATH)
 
     def current_store() -> Store:
@@ -286,8 +356,19 @@ def create_app(store: Store | None = None) -> FastAPI:
             raise HTTPException(status_code=401, detail="agent authentication failed")
         return agent
 
+    def require_employee(request: Request) -> dict[str, Any]:
+        employee_id = request.headers.get("x-employee-id", "")
+        api_key = request.headers.get("x-employee-key", "")
+        employee = current_store().get("employees", employee_id)
+        if not employee or not employee.get("active") or not secrets.compare_digest(api_key, employee.get("api_key", "")):
+            raise HTTPException(status_code=401, detail="employee authentication failed")
+        return employee
+
     def revoked(jti: str) -> bool:
         return jti in current_store().state["revoked_tokens"]
+
+    def used(jti: str) -> bool:
+        return jti in current_store().state["used_tokens"]
 
     def risk_tolerance() -> str:
         value = current_store().state.get("settings", {}).get("risk_tolerance", "high")
@@ -351,12 +432,24 @@ def create_app(store: Store | None = None) -> FastAPI:
         if isinstance(token_risk, str) and token_risk in RISK_ORDER and not risk_allowed(token_risk, tolerance):
             raise HTTPException(status_code=401, detail="token revoked by current risk tolerance")
 
-    def authorize_one(body: GatewayRequest, agent: dict[str, Any], *, raise_on_deny: bool) -> dict[str, Any]:
+    def request_fingerprint(body: GatewayRequest, agent: dict[str, Any], employee: dict[str, Any]) -> str:
+        return sha256_hex({
+            "request_id": body.request_id,
+            "agent_id": agent["id"],
+            "employee_id": employee["id"],
+            "mandate_id": body.mandate_id,
+            "action": body.action,
+            "params": body.params,
+            "data_policy": body.data_policy,
+            "purpose_code": body.purpose_code,
+        })
+
+    def authorize_one(body: GatewayRequest, agent: dict[str, Any], employee: dict[str, Any], *, raise_on_deny: bool) -> dict[str, Any]:
         store = current_store()
         action = store.get("actions", body.action)
 
         def deny(reason: str, status_code: int = 403, extra: dict[str, Any] | None = None) -> dict[str, Any]:
-            event = {"decision": "deny", "agent_id": agent["id"], "action": body.action, "reason": reason, **(extra or {})}
+            event = {"decision": "deny", "request_id": body.request_id, "agent_id": agent["id"], "employee_id": employee["id"], "action": body.action, "reason": reason, **(extra or {})}
             store.audit(event)
             if raise_on_deny:
                 raise HTTPException(status_code=status_code, detail=event)
@@ -366,55 +459,128 @@ def create_app(store: Store | None = None) -> FastAPI:
             return deny("unknown action")
         if body.action not in agent.get("allowed_actions", []):
             return deny("action not allowed for agent")
+        mandate = store.get("mandates", body.mandate_id)
+        if mandate is None or not mandate.get("active", True):
+            return deny("mandate not active")
+        if mandate.get("employee_id") != employee["id"] or mandate.get("agent_id") != agent["id"]:
+            return deny("mandate does not match employee and agent")
+        if mandate.get("valid_until") is not None and int(time.time()) >= mandate["valid_until"]:
+            return deny("mandate expired")
+        if body.action not in mandate.get("allowed_actions", []):
+            return deny("action not allowed by mandate")
         missing = [field for field in action.get("required_fields", []) if field not in body.params]
         if missing:
             return deny("missing required fields", status_code=400, extra={"missing_fields": missing})
         amount = body.params.get("amount")
         if action.get("max_amount") is not None and isinstance(amount, (int, float)) and amount > action["max_amount"]:
             return deny("amount limit exceeded")
+        if mandate.get("max_amount") is not None and isinstance(amount, (int, float)) and amount > mandate["max_amount"]:
+            return deny("mandate amount limit exceeded")
         roles = set(action.get("allowed_roles", []))
-        subject_role = body.subject.get("role")
-        if roles and subject_role not in roles:
-            return deny("subject role not allowed")
+        employee_roles = set(employee.get("roles", []))
+        if roles and not roles.intersection(employee_roles):
+            return deny("employee role not allowed")
+        allowed_purpose_codes = set(action.get("allowed_purpose_codes", []))
+        if allowed_purpose_codes and body.purpose_code not in allowed_purpose_codes:
+            return deny("business purpose not allowed")
+        destination_field = action.get("destination_field")
+        destination = body.params.get(destination_field) if destination_field else None
+        allowed_destinations = set(mandate.get("allowed_destinations", []))
+        if allowed_destinations and destination not in allowed_destinations:
+            return deny("destination not allowed by mandate")
         block = blocked_reason(body.action, action, body.params)
         if block:
             return deny(block, extra={"blocked": True})
+
+        policy: dict[str, Any] | None = None
+        if body.data_policy:
+            policy = store.get("data_policies", body.data_policy)
+            if policy is None or body.data_policy not in agent.get("allowed_data_policies", []):
+                return deny("data policy not allowed")
+            if body.data_policy not in mandate.get("allowed_data_policies", []):
+                return deny("data policy not allowed by mandate")
 
         risk_level = assess_risk(action, body.params)
         tolerance = effective_risk_tolerance(action.get("service"))
         if not risk_allowed(risk_level, tolerance):
             return deny("risk level exceeds gateway tolerance", extra={"risk_level": risk_level, "risk_tolerance": tolerance})
 
+        fingerprint = request_fingerprint(body, agent, employee)
+        requires_approval = bool(action.get("approval_required")) or risk_level in action.get("approval_risk_levels", [])
+        approval: dict[str, Any] | None = None
+        if requires_approval:
+            if body.approval_id:
+                approval = store.get("approvals", body.approval_id)
+                if approval is None or approval.get("status") != "approved":
+                    return deny("approval not granted")
+                if approval.get("request_hash") != fingerprint:
+                    return deny("approval does not match request")
+                if approval.get("expires_at", 0) <= int(time.time()):
+                    return deny("approval expired")
+                with store.lock:
+                    approval = store.get("approvals", body.approval_id)
+                    if approval is None or approval.get("token_issued"):
+                        return deny("approval already used")
+                    approval["token_issued"] = True
+                    store.state["approvals"][body.approval_id] = approval
+                    store.save()
+            else:
+                approval_id = f"apr_{secrets.token_urlsafe(12)}"
+                approval = {
+                    "id": approval_id,
+                    "status": "pending",
+                    "request_hash": fingerprint,
+                    "request_id": body.request_id,
+                    "agent_id": agent["id"],
+                    "employee_id": employee["id"],
+                    "mandate_id": body.mandate_id,
+                    "action": body.action,
+                    "params_hash": sha256_hex(body.params),
+                    "purpose_code": body.purpose_code,
+                    "reason": body.reason,
+                    "risk_level": risk_level,
+                    "created_at": int(time.time()),
+                    "expires_at": int(time.time()) + 900,
+                    "token_issued": False,
+                }
+                store.put("approvals", approval_id, approval)
+                store.audit({"decision": "require_approval", "request_id": body.request_id, "approval_id": approval_id, "agent_id": agent["id"], "employee_id": employee["id"], "action": body.action, "risk_level": risk_level})
+                return {"decision": "require_approval", "request_id": body.request_id, "approval_id": approval_id, "action": body.action, "risk_level": risk_level, "expires_in": 900}
+
         action_claims = {
             "agent_id": agent["id"],
+            "employee_id": employee["id"],
+            "mandate_id": body.mandate_id,
+            "request_id": body.request_id,
             "action": body.action,
             "service": action["service"],
             "operation": action["operation"],
             "params_hash": sha256_hex(body.params),
-            "subject": body.subject,
+            "purpose_code": body.purpose_code,
             "risk_level": risk_level,
+            "approval_id": approval["id"] if approval else None,
         }
         action_token = issue_token(TOKEN_SECRET, "action", action_claims, action["ttl_seconds"])
-        response: dict[str, Any] = {"decision": "allow", "action": body.action, "risk_level": risk_level, "action_token": action_token, "expires_in": action["ttl_seconds"]}
+        response: dict[str, Any] = {"decision": "allow", "request_id": body.request_id, "action": body.action, "risk_level": risk_level, "action_token": action_token, "expires_in": action["ttl_seconds"]}
 
-        if body.data_policy:
-            policy = store.get("data_policies", body.data_policy)
-            if policy is None or body.data_policy not in agent.get("allowed_data_policies", []):
-                return deny("data policy not allowed")
+        if policy:
             data_claims = {
                 "agent_id": agent["id"],
+                "employee_id": employee["id"],
+                "mandate_id": body.mandate_id,
+                "request_id": body.request_id,
                 "service": action["service"],
                 "policy_id": policy["id"],
                 "tables": policy.get("tables", []),
                 "columns": policy.get("columns", {}),
                 "row_filters": policy.get("row_filters", {}),
-                "subject": body.subject,
+                "purpose_code": body.purpose_code,
                 "risk_level": risk_level,
             }
             response["data_access_token"] = issue_token(TOKEN_SECRET, "data_access", data_claims, policy["ttl_seconds"])
             response["data_expires_in"] = policy["ttl_seconds"]
 
-        store.audit({"decision": "allow", "agent_id": agent["id"], "action": body.action, "risk_level": risk_level, "data_policy": body.data_policy})
+        store.audit({"decision": "allow", "request_id": body.request_id, "agent_id": agent["id"], "employee_id": employee["id"], "mandate_id": body.mandate_id, "action": body.action, "risk_level": risk_level, "data_policy": body.data_policy, "approval_id": approval["id"] if approval else None})
         return response
 
     @app.get("/health")
@@ -428,14 +594,19 @@ def create_app(store: Store | None = None) -> FastAPI:
     @app.post("/v1/authorize")
     def authorize(body: GatewayRequest, request: Request) -> dict[str, Any]:
         agent = require_agent(request)
-        return authorize_one(body, agent, raise_on_deny=True)
+        employee = require_employee(request)
+        return authorize_one(body, agent, employee, raise_on_deny=True)
 
     @app.post("/v1/authorize/batch")
     def authorize_batch(body: GatewayBatchRequest, request: Request) -> dict[str, Any]:
         agent = require_agent(request)
-        results = [authorize_one(item, agent, raise_on_deny=False) for item in body.actions]
+        employee = require_employee(request)
+        results = [authorize_one(item, agent, employee, raise_on_deny=False) for item in body.actions]
         allowed = sum(1 for item in results if item["decision"] == "allow")
-        return {"decision": "partial_allow" if allowed != len(results) else "allow", "allowed": allowed, "denied": len(results) - allowed, "results": results}
+        pending = sum(1 for item in results if item["decision"] == "require_approval")
+        denied = len(results) - allowed - pending
+        decision = "allow" if allowed == len(results) else "require_approval" if pending and not denied else "partial_allow"
+        return {"decision": decision, "allowed": allowed, "pending_approval": pending, "denied": denied, "results": results}
 
     @app.post("/v1/introspect")
     def introspect(body: IntrospectionRequest) -> dict[str, Any]:
@@ -446,6 +617,8 @@ def create_app(store: Store | None = None) -> FastAPI:
             return {"active": False, "reason": str(exc)}
         if revoked(claims["jti"]):
             return {"active": False, "reason": "revoked"}
+        if used(claims["jti"]):
+            return {"active": False, "reason": "consumed"}
         token_risk = claims.get("risk_level")
         tolerance = effective_risk_tolerance(claims.get("service") if isinstance(claims.get("service"), str) else None)
         if isinstance(token_risk, str) and token_risk in RISK_ORDER and not risk_allowed(token_risk, tolerance):
@@ -457,8 +630,29 @@ def create_app(store: Store | None = None) -> FastAPI:
         claims = verify_token(TOKEN_SECRET, body.token, "action")
         if revoked(claims["jti"]):
             raise HTTPException(status_code=401, detail="token revoked")
+        if used(claims["jti"]):
+            raise HTTPException(status_code=409, detail="token already consumed")
         ensure_token_still_allowed(claims)
         return {"ok": True, "claims": claims}
+
+    @app.post("/v1/consume/action")
+    def consume_action(body: ConsumeActionRequest) -> dict[str, Any]:
+        claims = verify_token(TOKEN_SECRET, body.token, "action")
+        if revoked(claims["jti"]):
+            raise HTTPException(status_code=401, detail="token revoked")
+        ensure_token_still_allowed(claims)
+        if claims.get("action") != body.action or claims.get("service") != body.service or claims.get("operation") != body.operation:
+            raise HTTPException(status_code=403, detail="token does not match target action")
+        if claims.get("params_hash") != sha256_hex(body.params):
+            raise HTTPException(status_code=403, detail="token does not match action parameters")
+        store = current_store()
+        with store.lock:
+            if used(claims["jti"]):
+                raise HTTPException(status_code=409, detail="token already consumed")
+            store.state["used_tokens"][claims["jti"]] = {"consumed_at": int(time.time()), "request_id": claims.get("request_id")}
+            store.save()
+        store.audit({"decision": "token_consumed", "jti": claims["jti"], "request_id": claims.get("request_id"), "agent_id": claims.get("agent_id"), "employee_id": claims.get("employee_id"), "action": claims.get("action")})
+        return {"ok": True, "consumed": True, "claims": claims}
 
     @app.post("/v1/validate/data-access")
     def validate_data_access(body: IntrospectionRequest) -> dict[str, Any]:
@@ -499,6 +693,70 @@ def create_app(store: Store | None = None) -> FastAPI:
         require_admin(request)
         agents = [{k: v for k, v in agent.items() if k != "api_key"} for agent in current_store().list("agents")]
         return {"agents": agents}
+
+    @app.get("/admin/employees")
+    def list_employees(request: Request) -> dict[str, Any]:
+        require_admin(request)
+        employees = [{k: v for k, v in employee.items() if k != "api_key"} for employee in current_store().list("employees")]
+        return {"employees": employees}
+
+    @app.post("/admin/employees")
+    def upsert_employee(body: EmployeeUpsert, request: Request) -> dict[str, Any]:
+        require_admin(request)
+        api_key = body.api_key or secrets.token_urlsafe(32)
+        employee = {**body.model_dump(), "api_key": api_key}
+        current_store().put("employees", body.id, employee)
+        current_store().audit({"decision": "admin_change", "op": "employee.upsert", "employee_id": body.id})
+        return {"employee": {k: v for k, v in employee.items() if k != "api_key"}, "api_key": api_key}
+
+    @app.get("/admin/mandates")
+    def list_mandates(request: Request) -> dict[str, Any]:
+        require_admin(request)
+        return {"mandates": current_store().list("mandates")}
+
+    @app.post("/admin/mandates")
+    def upsert_mandate(body: MandateUpsert, request: Request) -> dict[str, Any]:
+        require_admin(request)
+        mandate = body.model_dump()
+        current_store().put("mandates", body.id, mandate)
+        current_store().audit({"decision": "admin_change", "op": "mandate.upsert", "mandate_id": body.id, "employee_id": body.employee_id, "agent_id": body.agent_id})
+        return {"mandate": mandate}
+
+    @app.get("/admin/approvals")
+    def list_approvals(request: Request, status: str | None = None) -> dict[str, Any]:
+        require_admin(request)
+        approvals = current_store().list("approvals")
+        if status:
+            approvals = [approval for approval in approvals if approval.get("status") == status]
+        return {"approvals": sorted(approvals, key=lambda item: item.get("created_at", 0), reverse=True)}
+
+    @app.post("/admin/approvals/{approval_id}/approve")
+    def approve(approval_id: str, body: ApprovalDecision, request: Request) -> dict[str, Any]:
+        require_admin(request)
+        approval = current_store().get("approvals", approval_id)
+        if approval is None:
+            raise HTTPException(status_code=404, detail="approval not found")
+        if approval.get("status") != "pending":
+            raise HTTPException(status_code=409, detail="approval already decided")
+        if approval.get("expires_at", 0) <= int(time.time()):
+            raise HTTPException(status_code=409, detail="approval expired")
+        approval.update({"status": "approved", "approver_id": body.approver_id, "approval_reason": body.reason, "decided_at": int(time.time())})
+        current_store().put("approvals", approval_id, approval)
+        current_store().audit({"decision": "approval_granted", "approval_id": approval_id, "approver_id": body.approver_id, "request_id": approval.get("request_id")})
+        return {"approval": approval}
+
+    @app.post("/admin/approvals/{approval_id}/deny")
+    def deny_approval(approval_id: str, body: ApprovalDecision, request: Request) -> dict[str, Any]:
+        require_admin(request)
+        approval = current_store().get("approvals", approval_id)
+        if approval is None:
+            raise HTTPException(status_code=404, detail="approval not found")
+        if approval.get("status") != "pending":
+            raise HTTPException(status_code=409, detail="approval already decided")
+        approval.update({"status": "denied", "approver_id": body.approver_id, "approval_reason": body.reason, "decided_at": int(time.time())})
+        current_store().put("approvals", approval_id, approval)
+        current_store().audit({"decision": "approval_denied", "approval_id": approval_id, "approver_id": body.approver_id, "request_id": approval.get("request_id")})
+        return {"approval": approval}
 
     @app.post("/admin/agents")
     def upsert_agent(body: AgentUpsert, request: Request) -> dict[str, Any]:

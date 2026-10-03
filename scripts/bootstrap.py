@@ -24,6 +24,10 @@ store.put("actions", "transfer.create", {
     "allowed_roles": ["operator", "admin"],
     "base_risk": "medium",
     "risk_rules": [{"field": "amount", "gte": 500, "risk": "high"}],
+    "approval_required": False,
+    "approval_risk_levels": ["high", "critical"],
+    "allowed_purpose_codes": ["customer-payment", "operations-demo"],
+    "destination_field": "to_account",
 })
 
 store.put("actions", "user.create", {
@@ -37,6 +41,10 @@ store.put("actions", "user.create", {
     "allowed_roles": ["admin"],
     "base_risk": "medium",
     "risk_rules": [],
+    "approval_required": True,
+    "approval_risk_levels": [],
+    "allowed_purpose_codes": ["customer-onboarding"],
+    "destination_field": None,
 })
 
 store.put("actions", "users.select", {
@@ -50,6 +58,10 @@ store.put("actions", "users.select", {
     "allowed_roles": ["operator", "admin"],
     "base_risk": "low",
     "risk_rules": [{"field": "limit", "gte": 100, "risk": "medium"}],
+    "approval_required": False,
+    "approval_risk_levels": [],
+    "allowed_purpose_codes": ["customer-support", "operations-demo"],
+    "destination_field": None,
 })
 
 store.put("actions", "records.delete", {
@@ -63,6 +75,10 @@ store.put("actions", "records.delete", {
     "allowed_roles": ["admin"],
     "base_risk": "medium",
     "risk_rules": [{"field": "record_count", "gte": 100, "risk": "high"}, {"field": "record_count", "gte": 1000, "risk": "critical"}],
+    "approval_required": False,
+    "approval_risk_levels": ["high", "critical"],
+    "allowed_purpose_codes": ["data-retention"],
+    "destination_field": None,
 })
 
 store.put("data_policies", "accounts-read-basic", {
@@ -83,6 +99,26 @@ store.put("agents", "agent-demo", {
     "allowed_data_policies": ["accounts-read-basic"],
 })
 
+store.put("employees", "employee-demo", {
+    "id": "employee-demo",
+    "name": "Demo Bank Operator",
+    "api_key": "demo-employee-key-please-change",
+    "active": True,
+    "roles": ["operator", "admin"],
+})
+
+store.put("mandates", "mandate-demo", {
+    "id": "mandate-demo",
+    "employee_id": "employee-demo",
+    "agent_id": "agent-demo",
+    "active": True,
+    "allowed_actions": ["transfer.create", "user.create", "users.select", "records.delete"],
+    "allowed_data_policies": ["accounts-read-basic"],
+    "max_amount": 750,
+    "allowed_destinations": ["ACC-2", "ACC-TRUSTED"],
+    "valid_until": None,
+})
+
 store.state["settings"]["risk_tolerance"] = "high"
 store.state["settings"].setdefault("system_risk_tolerances", {})
 store.state["settings"]["system_risk_tolerances"].setdefault("mini-bank", "high")
@@ -92,3 +128,6 @@ store.audit({"decision": "admin_change", "op": "bootstrap"})
 print(f"Bootstrapped gateway state at {state_path}")
 print("Agent: agent-demo")
 print("Agent key: demo-agent-key-please-change")
+print("Employee: employee-demo")
+print("Employee key: demo-employee-key-please-change")
+print("Mandate: mandate-demo")
