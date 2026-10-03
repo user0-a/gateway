@@ -99,78 +99,87 @@ class RevokeRequest(BaseModel):
 
 ADMIN_UI_HTML = """
 <!doctype html>
-<html lang="pl">
+<html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Gateway Admin</title>
   <style>
-    :root { color-scheme: dark; font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
-    body { margin: 0; background: #0b1020; color: #e6edf7; }
-    main { max-width: 1180px; margin: 0 auto; padding: 32px 20px 56px; }
-    h1 { margin: 0 0 8px; font-size: 34px; }
-    h2 { margin: 0 0 16px; font-size: 20px; }
-    p { color: #9fb0ca; }
-    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 16px; }
-    .card { background: linear-gradient(180deg, #111936, #0e162d); border: 1px solid #223151; border-radius: 18px; padding: 18px; box-shadow: 0 18px 50px rgba(0,0,0,.25); }
-    label { display: block; color: #b8c6da; font-size: 13px; margin: 12px 0 6px; }
-    input, select, textarea { width: 100%; box-sizing: border-box; border: 1px solid #2d4168; background: #0a1226; color: #e6edf7; border-radius: 10px; padding: 10px 12px; outline: none; }
+    :root { color-scheme: light; font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", Inter, system-ui, sans-serif; }
+    * { -webkit-font-smoothing: antialiased; }
+    body { margin: 0; min-height: 100vh; background: radial-gradient(circle at 12% 0%, #ffffff 0, #f7f8fb 28%, #eef2f7 100%); color: #121417; }
+    body:before { content: ""; position: fixed; inset: 0; pointer-events: none; background: linear-gradient(120deg, rgba(255,255,255,.8), rgba(255,255,255,0)); }
+    main { position: relative; max-width: 1160px; margin: 0 auto; padding: 44px 22px 64px; }
+    h1 { margin: 0 0 8px; font-size: clamp(38px, 5vw, 60px); letter-spacing: -0.058em; line-height: .95; font-weight: 760; }
+    h2 { margin: 0 0 18px; font-size: 19px; letter-spacing: -0.02em; font-weight: 680; }
+    p { color: #667085; line-height: 1.55; }
+    .eyebrow { color: #7b8494; font-size: 13px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; margin-bottom: 12px; }
+    .lede { max-width: 690px; font-size: 17px; margin: 0 0 24px; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 18px; }
+    .card { background: rgba(255,255,255,.74); border: 1px solid rgba(198,207,222,.68); border-radius: 28px; padding: 22px; box-shadow: 0 28px 70px rgba(36,49,79,.09), inset 0 1px 0 rgba(255,255,255,.92); backdrop-filter: blur(22px) saturate(1.25); }
+    label { display: block; color: #687386; font-size: 12px; font-weight: 650; margin: 14px 0 7px; letter-spacing: .01em; }
+    input, select, textarea { width: 100%; box-sizing: border-box; border: 1px solid #d8dee9; background: rgba(255,255,255,.86); color: #111827; border-radius: 14px; padding: 11px 13px; outline: none; box-shadow: inset 0 1px 2px rgba(15,23,42,.04); transition: border-color .15s, box-shadow .15s, background .15s; }
+    input:focus, select:focus, textarea:focus { border-color: #007aff; box-shadow: 0 0 0 4px rgba(0,122,255,.14); background: #fff; }
     textarea { min-height: 78px; resize: vertical; }
-    button { border: 0; background: #6ea8fe; color: #071021; border-radius: 10px; padding: 10px 14px; font-weight: 700; cursor: pointer; margin-top: 12px; }
-    button.secondary { background: #263a63; color: #d8e4f8; }
-    button.danger { background: #ff7b72; color: #270a0a; }
-    code, pre { background: #071021; color: #d8e4f8; border-radius: 12px; }
-    pre { padding: 14px; overflow: auto; min-height: 70px; }
+    button { border: 0; background: #0071e3; color: white; border-radius: 999px; padding: 10px 16px; font-weight: 680; cursor: pointer; margin-top: 14px; box-shadow: 0 10px 24px rgba(0,113,227,.23); transition: transform .15s, box-shadow .15s, background .15s; }
+    button:hover { transform: translateY(-1px); box-shadow: 0 14px 28px rgba(0,122,255,.28); }
+    button.secondary { background: #eef2f7; color: #1f2937; box-shadow: none; }
+    button.danger { background: #ff3b30; color: white; box-shadow: 0 10px 24px rgba(255,59,48,.18); }
+    code, pre { background: rgba(244,246,250,.9); color: #1f2937; border: 1px solid #e1e6ef; border-radius: 16px; }
+    code { padding: 2px 6px; }
+    pre { padding: 15px; overflow: auto; min-height: 70px; }
     table { width: 100%; border-collapse: collapse; font-size: 14px; }
-    th, td { border-bottom: 1px solid #223151; padding: 10px 8px; text-align: left; vertical-align: top; }
-    th { color: #9fb0ca; font-weight: 600; }
-    .row { display: flex; gap: 10px; align-items: end; }
+    th, td { border-bottom: 1px solid #e7ebf2; padding: 12px 8px; text-align: left; vertical-align: top; }
+    th { color: #687386; font-weight: 680; }
+    .row { display: flex; gap: 12px; align-items: end; }
     .row > * { flex: 1; }
-    .pill { display: inline-block; padding: 4px 9px; border-radius: 999px; background: #223151; color: #b8c6da; font-size: 12px; }
-    .ok { color: #7ee787; }
-    .bad { color: #ff7b72; }
+    .pill { display: inline-block; padding: 5px 11px; border-radius: 999px; background: #eef2f7; color: #637083; font-size: 12px; font-weight: 680; margin-left: 8px; }
+    .ok { color: #168a3a; background: #e9f8ee; }
+    .bad { color: #c92a20; background: #fff0ee; }
+    @media (max-width: 720px) { main { padding-top: 28px; } .row { display: block; } .card { border-radius: 22px; } }
   </style>
 </head>
 <body>
 <main>
+  <div class="eyebrow">Policy control</div>
   <h1>Gateway Admin</h1>
-  <p>Panel do ustawiania risk tolerance, risk level dla systemow i blokad akcji. Operacje wymagaja <code>x-admin-key</code>.</p>
+  <p class="lede">Review authorization policy, tune risk tolerance, and block risky requests before agents reach downstream systems. Changes apply immediately to newly issued tokens and validation checks.</p>
 
   <section class="card">
-    <h2>Dostep</h2>
+    <h2>Access</h2>
     <label>Admin key</label>
     <input id="adminKey" type="password" value="dev-admin-key" autocomplete="off">
-    <button onclick="loadAll()">Odswiez panel</button>
+    <button onclick="loadAll()">Refresh</button>
     <span id="status" class="pill">idle</span>
   </section>
 
   <div class="grid" style="margin-top:16px">
     <section class="card">
       <h2>Global Risk Level</h2>
-      <label>Globalna tolerancja ryzyka</label>
+      <label>Global tolerance</label>
       <select id="globalRisk">
         <option>low</option><option>medium</option><option>high</option><option>critical</option>
       </select>
-      <button onclick="saveGlobalRisk()">Zapisz global risk</button>
-      <p>Akcje z risk powyzej tego poziomu nie dostana tokena. Juz wydane tokeny tez przestana przechodzic walidacje.</p>
+      <button onclick="saveGlobalRisk()">Save global setting</button>
+      <p>Requests above this level are denied. Previously issued tokens are also rejected during validation if the current tolerance no longer allows them.</p>
     </section>
 
     <section class="card">
       <h2>Risk Per System</h2>
       <div class="row">
         <div><label>System/service</label><input id="systemName" placeholder="mini-bank"></div>
-        <div><label>Tolerancja</label><select id="systemRisk"><option>low</option><option>medium</option><option>high</option><option>critical</option></select></div>
+        <div><label>Tolerance</label><select id="systemRisk"><option>low</option><option>medium</option><option>high</option><option>critical</option></select></div>
       </div>
-      <button onclick="saveSystemRisk()">Zapisz dla systemu</button>
-      <button class="secondary" onclick="clearSystemRisk()">Usun override</button>
+      <button onclick="saveSystemRisk()">Save system override</button>
+      <button class="secondary" onclick="clearSystemRisk()">Clear override</button>
       <pre id="systemRiskOut">{}</pre>
     </section>
   </div>
 
   <div class="grid" style="margin-top:16px">
     <section class="card">
-      <h2>Nowa Blokada</h2>
-      <label>ID blokady</label><input id="blockId" placeholder="block-large-delete">
+      <h2>Block Rule</h2>
+      <label>Rule ID</label><input id="blockId" placeholder="block-large-delete">
       <label>Action</label><input id="blockAction" placeholder="records.delete">
       <label>Service</label><input id="blockService" placeholder="mini-bank">
       <label>Operation</label><input id="blockOperation" placeholder="delete.records">
@@ -179,22 +188,22 @@ ADMIN_UI_HTML = """
         <div><label>Min records</label><input id="blockMinRecords" type="number"></div>
       </div>
       <label>Reason</label><input id="blockReason" placeholder="large delete disabled">
-      <button onclick="saveBlock()">Dodaj/Zapisz blokade</button>
+      <button onclick="saveBlock()">Save block rule</button>
     </section>
 
     <section class="card">
-      <h2>Blokady</h2>
+      <h2>Active Blocks</h2>
       <div id="blocks"></div>
     </section>
   </div>
 
   <section class="card" style="margin-top:16px">
-    <h2>Akcje I Systemy</h2>
+    <h2>Actions And Systems</h2>
     <div id="actions"></div>
   </section>
 
   <section class="card" style="margin-top:16px">
-    <h2>Odpowiedz API</h2>
+    <h2>API Response</h2>
     <pre id="output"></pre>
   </section>
 </main>
@@ -253,14 +262,114 @@ async function deleteBlock(id) {
   catch (err) { setStatus(err.message, false); }
 }
 function renderBlocks(blocks) {
-  if (!blocks.length) { document.getElementById('blocks').innerHTML = '<p>Brak blokad.</p>'; return; }
-  document.getElementById('blocks').innerHTML = '<table><tr><th>ID</th><th>Zakres</th><th>Reason</th><th></th></tr>' + blocks.map(b => `<tr><td>${b.id}</td><td>action=${b.action || '*'}<br>service=${b.service || '*'}<br>operation=${b.operation || '*'}<br>min_amount=${b.min_amount || '-'} min_records=${b.min_records || '-'}</td><td>${b.reason || ''}</td><td><button class="danger" onclick="deleteBlock('${b.id}')">Usun</button></td></tr>`).join('') + '</table>';
+  if (!blocks.length) { document.getElementById('blocks').innerHTML = '<p>No active block rules.</p>'; return; }
+  document.getElementById('blocks').innerHTML = '<table><tr><th>ID</th><th>Scope</th><th>Reason</th><th></th></tr>' + blocks.map(b => `<tr><td>${b.id}</td><td>action=${b.action || '*'}<br>service=${b.service || '*'}<br>operation=${b.operation || '*'}<br>min_amount=${b.min_amount || '-'} min_records=${b.min_records || '-'}</td><td>${b.reason || ''}</td><td><button class="danger" onclick="deleteBlock('${b.id}')">Delete</button></td></tr>`).join('') + '</table>';
 }
 function renderActions(actions, systemRisks) {
-  if (!actions.length) { document.getElementById('actions').innerHTML = '<p>Brak akcji. Uruchom make bootstrap.</p>'; return; }
+  if (!actions.length) { document.getElementById('actions').innerHTML = '<p>No actions configured yet. Run <code>make bootstrap</code> to load sample policies.</p>'; return; }
   document.getElementById('actions').innerHTML = '<table><tr><th>Action</th><th>System</th><th>Operation</th><th>Base risk</th><th>System tolerance</th></tr>' + actions.map(a => `<tr><td>${a.id}</td><td>${a.service}</td><td>${a.operation}</td><td>${a.base_risk}</td><td>${systemRisks[a.service] || '(global)'}</td></tr>`).join('') + '</table>';
 }
 loadAll();
+</script>
+</body>
+</html>
+"""
+
+
+DEMO_UI_HTML = """
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Gateway Live Demo</title>
+  <style>
+    :root { color-scheme: light; font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", Inter, system-ui, sans-serif; }
+    * { box-sizing: border-box; -webkit-font-smoothing: antialiased; }
+    body { margin: 0; min-height: 100vh; background: #f5f5f7; color: #1d1d1f; }
+    main { max-width: 980px; margin: 0 auto; padding: 42px 20px 64px; }
+    .top { display: flex; justify-content: space-between; gap: 18px; align-items: end; margin-bottom: 24px; }
+    h1 { margin: 0; font-size: clamp(36px, 5vw, 56px); line-height: .96; letter-spacing: -.055em; }
+    p { color: #6e6e73; line-height: 1.5; }
+    .card { background: rgba(255,255,255,.78); border: 1px solid rgba(210,210,215,.7); border-radius: 28px; box-shadow: 0 22px 55px rgba(0,0,0,.08); backdrop-filter: blur(20px); }
+    .chat { padding: 22px; min-height: 410px; }
+    .bubble { max-width: 76%; padding: 13px 15px; border-radius: 20px; margin: 12px 0; line-height: 1.42; white-space: pre-wrap; }
+    .human { margin-left: auto; background: #0071e3; color: white; border-bottom-right-radius: 6px; }
+    .agent { background: #fff; color: #1d1d1f; border: 1px solid #e5e5ea; border-bottom-left-radius: 6px; }
+    .gateway { background: #f2f4f7; border: 1px solid #e0e5ee; color: #344054; }
+    .deny { background: #fff1f0; border-color: #ffd3ce; color: #b42318; }
+    .allow { background: #ecfdf3; border-color: #bbf7d0; color: #067647; }
+    .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 12px; padding: 16px; border-top: 1px solid #ececf0; }
+    button { border: 0; border-radius: 999px; padding: 11px 15px; font-weight: 700; cursor: pointer; background: #0071e3; color: white; }
+    button.secondary { background: #e8ebf0; color: #1d1d1f; }
+    button.danger { background: #ff3b30; color: white; }
+    button:disabled { opacity: .45; cursor: not-allowed; }
+    code { background: #f2f4f7; border: 1px solid #e3e8ef; border-radius: 8px; padding: 1px 5px; }
+    pre { margin: 12px 0 0; padding: 12px; overflow: auto; background: #0b1020; color: #d8e4f8; border-radius: 16px; font-size: 12px; }
+    .meta { font-size: 13px; color: #86868b; }
+  </style>
+</head>
+<body>
+<main>
+  <div class="top">
+    <div>
+      <p class="meta">Live presentation</p>
+      <h1>Agent request,<br>gateway decision.</h1>
+      <p>The agent asks for permission to create a user. First it is blocked by policy. Then the admin allows it and the same agent gets a token.</p>
+    </div>
+  </div>
+  <section class="card">
+    <div id="chat" class="chat"></div>
+    <div class="controls">
+      <button class="danger" onclick="prepareDenied()">1. Set policy to deny</button>
+      <button onclick="agentAttempt()">2. Agent asks gateway</button>
+      <button class="secondary" onclick="allowAction()">3. Admin allows it</button>
+      <button onclick="agentAttempt()">4. Agent retries</button>
+      <button class="secondary" onclick="resetChat()">Reset chat</button>
+    </div>
+  </section>
+</main>
+<script>
+const adminKey = 'dev-admin-key';
+const agentHeaders = { 'content-type': 'application/json', 'x-agent-id': 'agent-demo', 'x-agent-key': 'demo-agent-key-please-change' };
+const task = { action: 'user.create', params: { email: 'presentation.user@example.com', name: 'Presentation User', initial_balance: '25.00' }, subject: { role: 'admin' }, reason: 'employee asked the agent to create a customer user' };
+function chat() { return document.getElementById('chat'); }
+function add(kind, text, data) {
+  const div = document.createElement('div');
+  div.className = 'bubble ' + kind;
+  div.textContent = text;
+  if (data) { const pre = document.createElement('pre'); pre.textContent = JSON.stringify(data, null, 2); div.appendChild(pre); }
+  chat().appendChild(div); chat().scrollTop = chat().scrollHeight;
+}
+async function admin(path, options = {}) {
+  const res = await fetch(path, { ...options, headers: { 'content-type': 'application/json', 'x-admin-key': adminKey, ...(options.headers || {}) } });
+  const data = await res.json();
+  if (!res.ok) throw new Error(JSON.stringify(data));
+  return data;
+}
+async function prepareDenied() {
+  await admin('/admin/blocks', { method: 'POST', body: JSON.stringify({ id: 'presentation-block-user-create', action: 'user.create', reason: 'Admin approval required for user creation demo' }) });
+  add('gateway deny', 'Policy prepared: user.create is currently blocked.');
+}
+async function allowAction() {
+  await admin('/admin/blocks/presentation-block-user-create', { method: 'DELETE' });
+  add('gateway allow', 'Admin allowed user.create by removing the block rule.');
+}
+async function agentAttempt() {
+  add('human', 'Employee: Create a new bank user for Presentation User.');
+  add('agent', 'Agent: I built an action plan: user.create. Asking Gateway for a token...');
+  const res = await fetch('/v1/authorize', { method: 'POST', headers: agentHeaders, body: JSON.stringify(task) });
+  const data = await res.json();
+  if (!res.ok) {
+    add('gateway deny', 'Gateway: denied. No token issued.', data);
+    add('agent', 'Agent: I cannot call mini-bank without an action token.');
+    return;
+  }
+  add('gateway allow', 'Gateway: allowed. Token issued for user.create.', { decision: data.decision, action: data.action, risk_level: data.risk_level, token_preview: data.action_token.slice(0, 44) + '...' });
+  add('agent', 'Agent: I can now call mini-bank with Authorization: GatewayAction <token>.');
+}
+function resetChat() { chat().innerHTML = ''; add('gateway', 'Ready. Start with “Set policy to deny”, then let the agent ask for a token.'); }
+resetChat();
 </script>
 </body>
 </html>
@@ -424,6 +533,10 @@ def create_app(store: Store | None = None) -> FastAPI:
     @app.get("/admin/ui", response_class=HTMLResponse)
     def admin_ui() -> str:
         return ADMIN_UI_HTML
+
+    @app.get("/demo", response_class=HTMLResponse)
+    def demo_ui() -> str:
+        return DEMO_UI_HTML
 
     @app.post("/v1/authorize")
     def authorize(body: GatewayRequest, request: Request) -> dict[str, Any]:

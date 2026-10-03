@@ -171,9 +171,34 @@ curl -s http://127.0.0.1:8001/v1/introspect \
 
 ## Integracja Z Mini-Bankiem
 
-Nie ruszalem `mini-bank`. Integracja powinna isc przez HTTP:
+Integracja idzie przez HTTP:
 
 1. Agent pyta gateway o `action_token` dla operacji.
 2. Agent albo gateway przekazuje token do `mini-bank` w naglowku, np. `Authorization: GatewayAction <token>`.
 3. `mini-bank` przed wykonaniem akcji wywoluje `POST /v1/validate/action`.
 4. Dla odczytow danych `mini-bank` waliduje `data_access_token` i sprawdza `tables`, `columns`, `row_filters`.
+
+Uruchom gateway:
+
+```bash
+cd ~/Desktop/gateway
+make bootstrap
+make dev
+```
+
+Uruchom mini-bank w trybie gateway:
+
+```bash
+cd ~/Desktop/mini-bank
+BANK_GATEWAY_URL=http://127.0.0.1:8001 python3 app.py --no-browser
+```
+
+Uruchom przykładowego agenta, który tworzy usera w banku:
+
+```bash
+cd ~/Desktop/gateway
+python3 scripts/agent_to_bank_demo.py \
+  --name "Jane Agent" \
+  --email "jane.agent@example.com" \
+  --initial-balance "25.00"
+```

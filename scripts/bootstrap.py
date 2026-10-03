@@ -28,7 +28,7 @@ store.put("actions", "transfer.create", {
 
 store.put("actions", "user.create", {
     "id": "user.create",
-    "description": "Create a bank user",
+    "description": "Create a bank user and a default account",
     "service": "mini-bank",
     "operation": "user.create",
     "ttl_seconds": 60,
@@ -36,6 +36,45 @@ store.put("actions", "user.create", {
     "max_amount": None,
     "allowed_roles": ["admin"],
     "base_risk": "medium",
+    "risk_rules": [],
+})
+
+store.put("actions", "account.create", {
+    "id": "account.create",
+    "description": "Create a bank account",
+    "service": "mini-bank",
+    "operation": "account.create",
+    "ttl_seconds": 60,
+    "required_fields": ["owner", "initial_balance"],
+    "max_amount": None,
+    "allowed_roles": ["operator", "admin"],
+    "base_risk": "medium",
+    "risk_rules": [],
+})
+
+store.put("actions", "deposit.create", {
+    "id": "deposit.create",
+    "description": "Deposit funds into an account",
+    "service": "mini-bank",
+    "operation": "deposit.create",
+    "ttl_seconds": 60,
+    "required_fields": ["account_id", "amount"],
+    "max_amount": 1000,
+    "allowed_roles": ["operator", "admin"],
+    "base_risk": "medium",
+    "risk_rules": [{"field": "amount", "gte": 500, "risk": "high"}],
+})
+
+store.put("actions", "account.close", {
+    "id": "account.close",
+    "description": "Close an account",
+    "service": "mini-bank",
+    "operation": "account.close",
+    "ttl_seconds": 60,
+    "required_fields": ["account_id", "transfer_to"],
+    "max_amount": None,
+    "allowed_roles": ["admin"],
+    "base_risk": "high",
     "risk_rules": [],
 })
 
@@ -79,7 +118,7 @@ store.put("agents", "agent-demo", {
     "name": "Demo Agent",
     "api_key": "demo-agent-key-please-change",
     "active": True,
-    "allowed_actions": ["transfer.create", "user.create", "users.select", "records.delete"],
+    "allowed_actions": ["transfer.create", "user.create", "account.create", "deposit.create", "account.close", "users.select", "records.delete"],
     "allowed_data_policies": ["accounts-read-basic"],
 })
 
