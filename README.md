@@ -17,6 +17,27 @@ Docelowy serwis, np. `mini-bank`, nie musi ufac agentowi. Waliduje tylko token w
 6. Agent wywoluje docelowe serwisy, np. `mini-bank`, z tokenami.
 7. Serwis docelowy waliduje token przez gateway przed wykonaniem akcji.
 
+## Plan Integrity
+
+Gateway moze zatwierdzic caly plan wykonania, policzyc `plan_hash` i powiazac kazdy `action_token` z konkretnym krokiem planu:
+
+- `plan_id`
+- `plan_hash`
+- `step_id`
+- `params_hash`
+
+Jesli agent sprobuje wykonac akcje, ktorej nie ma w zatwierdzonym planie, gateway odrzuci request z `outside_authorized_plan` i wymusi `request_plan_extension`.
+
+Glowne endpointy:
+
+- `POST /v1/plans/authorize` - zatwierdza plan i wydaje tokeny dla krokow.
+- `POST /v1/plans/{plan_id}/extensions` - agent prosi o dodanie kroku do planu.
+- `POST /admin/plans/extensions/{extension_id}/decision` - admin zatwierdza albo odrzuca extension.
+- `POST /v1/plans/extensions/{extension_id}/employee-decision` - pracownik-wlasciciel zadania zatwierdza albo odrzuca extension.
+- `GET /v1/plans/{plan_id}` - podglad planu dla admina.
+
+Employee approval dziala, gdy plan ma w `subject` pole `employee_id`, `user_id` albo `id`. Request decyzyjny musi miec naglowek `x-employee-id` zgodny z wlascicielem planu.
+
 ## Risk Tolerance
 
 Gateway ma globalny poziom tolerancji ryzyka:

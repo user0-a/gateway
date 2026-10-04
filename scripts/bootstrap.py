@@ -91,6 +91,19 @@ store.put("actions", "users.select", {
     "risk_rules": [{"field": "limit", "gte": 100, "risk": "medium"}],
 })
 
+store.put("actions", "customer.read", {
+    "id": "customer.read",
+    "description": "Read customer profile data",
+    "service": "mini-bank",
+    "operation": "customer.read",
+    "ttl_seconds": 120,
+    "required_fields": ["customer_id"],
+    "max_amount": None,
+    "allowed_roles": ["operator", "admin"],
+    "base_risk": "medium",
+    "risk_rules": [],
+})
+
 store.put("actions", "records.delete", {
     "id": "records.delete",
     "description": "Delete records in mini-bank",
@@ -118,7 +131,7 @@ store.put("agents", "agent-demo", {
     "name": "Demo Agent",
     "api_key": "demo-agent-key-please-change",
     "active": True,
-    "allowed_actions": ["transfer.create", "user.create", "account.create", "deposit.create", "account.close", "users.select", "records.delete"],
+    "allowed_actions": ["transfer.create", "user.create", "account.create", "deposit.create", "account.close", "users.select", "customer.read", "records.delete"],
     "allowed_data_policies": ["accounts-read-basic"],
 })
 

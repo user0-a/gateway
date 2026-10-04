@@ -12,6 +12,8 @@ DEFAULT_STATE = {
     "agents": {},
     "actions": {},
     "data_policies": {},
+    "plans": {},
+    "plan_extensions": {},
     "blocks": {},
     "settings": {"risk_tolerance": "high", "system_risk_tolerances": {}},
     "revoked_tokens": {},

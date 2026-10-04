@@ -60,10 +60,42 @@ class GatewayRequest(BaseModel):
     data_policy: str | None = None
     subject: dict[str, Any] = Field(default_factory=dict)
     reason: str = ""
+    plan_id: str | None = None
+    step_id: str | None = None
 
 
 class GatewayBatchRequest(BaseModel):
     actions: list[GatewayRequest] = Field(min_length=1, max_length=50)
+
+
+class PlanStep(BaseModel):
+    id: str = Field(min_length=1, max_length=120)
+    action: str = Field(min_length=1, max_length=120)
+    params: dict[str, Any] = Field(default_factory=dict)
+    data_policy: str | None = None
+    reason: str = ""
+
+
+class PlanAuthorizeRequest(BaseModel):
+    plan_id: str = Field(min_length=1, max_length=120)
+    goal: str = Field(min_length=1, max_length=500)
+    subject: dict[str, Any] = Field(default_factory=dict)
+    steps: list[PlanStep] = Field(min_length=1, max_length=50)
+
+
+class PlanExtensionRequest(BaseModel):
+    step: PlanStep
+    reason: str = Field(min_length=1, max_length=500)
+
+
+class PlanExtensionDecision(BaseModel):
+    decision: Literal["approve", "reject"]
+    comment: str = ""
+
+
+class EmployeePlanExtensionDecision(BaseModel):
+    decision: Literal["approve", "reject"]
+    comment: str = ""
 
 
 class SettingsUpdate(BaseModel):
@@ -454,6 +486,58 @@ def create_app(store: Store | None = None) -> FastAPI:
             risk = "low" if RISK_ORDER[risk] <= RISK_ORDER["low"] else risk
         return risk
 
+    def canonical_plan(goal: str, steps: list[dict[str, Any]]) -> dict[str, Any]:
+        return {
+            "goal": goal,
+            "steps": [
+                {"id": step["id"], "action": step["action"], "params_hash": sha256_hex(step.get("params", {})), "data_policy": step.get("data_policy")}
+                for step in steps
+            ],
+        }
+
+    def plan_hash(goal: str, steps: list[dict[str, Any]]) -> str:
+        return sha256_hex(canonical_plan(goal, steps))
+
+    def plan_owner(plan: dict[str, Any]) -> str | None:
+        subject = plan.get("subject", {})
+        owner = subject.get("employee_id") or subject.get("user_id") or subject.get("id")
+        return owner if isinstance(owner, str) and owner else None
+
+    def apply_extension_decision(extension_id: str, decision: str, comment: str, actor: str, actor_type: str) -> dict[str, Any]:
+        store = current_store()
+        extension = store.get("plan_extensions", extension_id)
+        if extension is None:
+            raise HTTPException(status_code=404, detail="extension not found")
+        if extension.get("status") != "pending":
+            raise HTTPException(status_code=409, detail=f"extension is {extension.get('status')}")
+        plan = store.get("plans", extension["plan_id"])
+        if plan is None:
+            raise HTTPException(status_code=404, detail="plan not found")
+        extension["status"] = "approved" if decision == "approve" else "rejected"
+        extension["comment"] = comment
+        extension["decided_by"] = actor
+        extension["decided_by_type"] = actor_type
+        if decision == "approve":
+            plan["steps"].append(extension["step"])
+            plan["plan_hash"] = plan_hash(plan["goal"], plan["steps"])
+            store.put("plans", plan["id"], plan)
+        store.put("plan_extensions", extension_id, extension)
+        store.audit({"decision": "plan_extension_" + extension["status"], "op": "plan_extension.decision", "plan_id": plan["id"], "extension_id": extension_id, "actor": actor, "actor_type": actor_type})
+        return {"extension": extension, "plan": plan}
+
+    def plan_step_or_error(body: GatewayRequest) -> tuple[dict[str, Any] | None, dict[str, Any] | None]:
+        if not body.plan_id:
+            return None, None
+        plan = current_store().get("plans", body.plan_id)
+        if plan is None or plan.get("status") != "approved":
+            return None, {"reason": "unknown_or_unapproved_plan", "plan_id": body.plan_id, "required": "new_authorization"}
+        step = next((item for item in plan.get("steps", []) if item.get("id") == body.step_id), None)
+        if step is None:
+            return None, {"reason": "outside_authorized_plan", "plan_id": body.plan_id, "step_id": body.step_id, "required": "request_plan_extension"}
+        if step.get("action") != body.action or sha256_hex(step.get("params", {})) != sha256_hex(body.params):
+            return None, {"reason": "plan_step_mismatch", "plan_id": body.plan_id, "step_id": body.step_id, "required": "new_authorization"}
+        return step, None
+
     def ensure_token_still_allowed(claims: dict[str, Any]) -> None:
         token_risk = claims.get("risk_level")
         tolerance = effective_risk_tolerance(claims.get("service") if isinstance(claims.get("service"), str) else None)
@@ -475,6 +559,9 @@ def create_app(store: Store | None = None) -> FastAPI:
             return deny("unknown action")
         if body.action not in agent.get("allowed_actions", []):
             return deny("action not allowed for agent")
+        plan_step, plan_error = plan_step_or_error(body)
+        if plan_error:
+            return deny(plan_error["reason"], extra=plan_error)
         missing = [field for field in action.get("required_fields", []) if field not in body.params]
         if missing:
             return deny("missing required fields", status_code=400, extra={"missing_fields": missing})
@@ -503,6 +590,9 @@ def create_app(store: Store | None = None) -> FastAPI:
             "subject": body.subject,
             "risk_level": risk_level,
         }
+        if body.plan_id and plan_step:
+            plan = store.get("plans", body.plan_id)
+            action_claims.update({"plan_id": body.plan_id, "plan_hash": plan["plan_hash"], "step_id": plan_step["id"]})
         action_token = issue_token(TOKEN_SECRET, "action", action_claims, action["ttl_seconds"])
         response: dict[str, Any] = {"decision": "allow", "action": body.action, "risk_level": risk_level, "action_token": action_token, "expires_in": action["ttl_seconds"]}
 
@@ -549,6 +639,77 @@ def create_app(store: Store | None = None) -> FastAPI:
         results = [authorize_one(item, agent, raise_on_deny=False) for item in body.actions]
         allowed = sum(1 for item in results if item["decision"] == "allow")
         return {"decision": "partial_allow" if allowed != len(results) else "allow", "allowed": allowed, "denied": len(results) - allowed, "results": results}
+
+    @app.post("/v1/plans/authorize")
+    def authorize_plan(body: PlanAuthorizeRequest, request: Request) -> dict[str, Any]:
+        agent = require_agent(request)
+        store = current_store()
+        if store.get("plans", body.plan_id):
+            raise HTTPException(status_code=409, detail="plan_id already exists")
+        steps = [step.model_dump() for step in body.steps]
+        digest = plan_hash(body.goal, steps)
+        plan = {
+            "id": body.plan_id,
+            "goal": body.goal,
+            "agent_id": agent["id"],
+            "subject": body.subject,
+            "steps": steps,
+            "plan_hash": digest,
+            "status": "approved",
+        }
+        store.put("plans", body.plan_id, plan)
+        results = [
+            authorize_one(
+                GatewayRequest(action=step["action"], params=step.get("params", {}), data_policy=step.get("data_policy"), subject=body.subject, reason=step.get("reason", ""), plan_id=body.plan_id, step_id=step["id"]),
+                agent,
+                raise_on_deny=False,
+            )
+            for step in steps
+        ]
+        allowed = sum(1 for item in results if item["decision"] == "allow")
+        store.audit({"decision": "plan_approved", "agent_id": agent["id"], "plan_id": body.plan_id, "plan_hash": digest, "steps": len(steps)})
+        return {"decision": "approved", "plan_id": body.plan_id, "plan_hash": digest, "allowed": allowed, "denied": len(results) - allowed, "step_results": results}
+
+    @app.get("/v1/plans/{plan_id}")
+    def get_plan(plan_id: str, request: Request) -> dict[str, Any]:
+        require_admin(request)
+        plan = current_store().get("plans", plan_id)
+        if plan is None:
+            raise HTTPException(status_code=404, detail="plan not found")
+        return {"plan": plan}
+
+    @app.post("/v1/plans/{plan_id}/extensions")
+    def request_plan_extension(plan_id: str, body: PlanExtensionRequest, request: Request) -> dict[str, Any]:
+        agent = require_agent(request)
+        plan = current_store().get("plans", plan_id)
+        if plan is None or plan.get("status") != "approved":
+            raise HTTPException(status_code=404, detail="approved plan not found")
+        extension_id = f"ext_{secrets.token_urlsafe(10)}"
+        extension = {"id": extension_id, "plan_id": plan_id, "agent_id": agent["id"], "status": "pending", "step": body.step.model_dump(), "reason": body.reason}
+        current_store().put("plan_extensions", extension_id, extension)
+        current_store().audit({"decision": "plan_extension_requested", "agent_id": agent["id"], "plan_id": plan_id, "extension_id": extension_id, "action": body.step.action})
+        return {"decision": "requires_approval", "extension_id": extension_id, "plan_id": plan_id, "requested_step": extension["step"]}
+
+    @app.post("/admin/plans/extensions/{extension_id}/decision")
+    def decide_plan_extension(extension_id: str, body: PlanExtensionDecision, request: Request) -> dict[str, Any]:
+        require_admin(request)
+        return apply_extension_decision(extension_id, body.decision, body.comment, request.headers.get("x-admin-actor", "admin"), "admin")
+
+    @app.post("/v1/plans/extensions/{extension_id}/employee-decision")
+    def decide_plan_extension_by_employee(extension_id: str, body: EmployeePlanExtensionDecision, request: Request) -> dict[str, Any]:
+        employee_id = request.headers.get("x-employee-id", "")
+        extension = current_store().get("plan_extensions", extension_id)
+        if extension is None:
+            raise HTTPException(status_code=404, detail="extension not found")
+        plan = current_store().get("plans", extension["plan_id"])
+        if plan is None:
+            raise HTTPException(status_code=404, detail="plan not found")
+        owner = plan_owner(plan)
+        if not owner:
+            raise HTTPException(status_code=403, detail="plan has no employee owner")
+        if not secrets.compare_digest(employee_id, owner):
+            raise HTTPException(status_code=403, detail="only the requesting employee can approve this extension")
+        return apply_extension_decision(extension_id, body.decision, body.comment, employee_id, "employee")
 
     @app.post("/v1/introspect")
     def introspect(body: IntrospectionRequest) -> dict[str, Any]:
