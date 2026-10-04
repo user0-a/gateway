@@ -225,3 +225,124 @@ python3 scripts/agent_to_bank_demo.py \
 ```
 
 minibank repo: https://github.com/user0-a/mini-bank
+
+For testing with AI Agent:
+```bash
+Act as an agent and test Gateway plan integrity with employee approval.
+
+Gateway:
+http://127.0.0.1:8001
+
+Agent credentials:
+x-agent-id: agent-demo
+x-agent-key: demo-agent-key-please-change
+
+Employee owner:
+emp-123
+
+Step 1:
+Authorize this plan:
+
+POST /v1/plans/authorize
+
+Body:
+{
+  "plan_id": "plan-employee-demo-1",
+  "goal": "Handle invoice INV-847",
+  "subject": {
+    "role": "admin",
+    "employee_id": "emp-123"
+  },
+  "steps": [
+    {
+      "id": "s1",
+      "action": "users.select",
+      "params": {
+        "limit": 10
+      },
+      "reason": "Find users related to the invoice"
+    }
+  ]
+}
+
+Step 2:
+Try to authorize a new action outside the plan:
+
+POST /v1/authorize
+
+Body:
+{
+  "action": "customer.read",
+  "params": {
+    "customer_id": "CUST-123"
+  },
+  "subject": {
+    "role": "admin",
+    "employee_id": "emp-123"
+  },
+  "plan_id": "plan-employee-demo-1",
+  "step_id": "s2"
+}
+
+Expected:
+Gateway should deny with reason outside_authorized_plan.
+
+Step 3:
+Request a plan extension:
+
+POST /v1/plans/plan-employee-demo-1/extensions
+
+Body:
+{
+  "reason": "Need customer data to validate invoice ownership before continuing",
+  "step": {
+    "id": "s2",
+    "action": "customer.read",
+    "params": {
+      "customer_id": "CUST-123"
+    },
+    "reason": "Validate customer ownership"
+  }
+}
+
+Save the returned extension_id.
+
+Step 4:
+Simulate employee approval:
+
+POST /v1/plans/extensions/{extension_id}/employee-decision
+
+Headers:
+content-type: application/json
+x-employee-id: emp-123
+
+Body:
+{
+  "decision": "approve",
+  "comment": "I requested this task and approve the extra step"
+}
+
+Step 5:
+Retry the same action:
+
+POST /v1/authorize
+
+Body:
+{
+  "action": "customer.read",
+  "params": {
+    "customer_id": "CUST-123"
+  },
+  "subject": {
+    "role": "admin",
+    "employee_id": "emp-123"
+  },
+  "plan_id": "plan-employee-demo-1",
+  "step_id": "s2"
+}
+
+Expected:
+Gateway should allow it and return an action_token containing plan_id, step_id, and plan_hash.
+
+Return a short summary of each step and the key JSON responses.
+```
