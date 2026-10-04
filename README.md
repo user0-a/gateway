@@ -223,3 +223,5 @@ python3 scripts/agent_to_bank_demo.py \
   --email "jane.agent@example.com" \
   --initial-balance "25.00"
 ```
+
+minibank repo: https://github.com/user0-a/mini-bank
