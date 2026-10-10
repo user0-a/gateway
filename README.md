@@ -108,4 +108,5 @@ make java-test  # moduły Java (wymaga Maven)
 - Jeden klucz administratora — produkcja: konta z rolami, SSO banku i zasada czterech oczu dla zmian polityk.
 - Klucze gatewaya w plikach PEM — produkcja: HSM / KMS.
 - Klucze demo agentów i pracowników generuje `bootstrap.py` — produkcja: klucz pracownika na jego urządzeniu (passkey/WebAuthn), klucz agenta w module podpisującym, poza procesem modelu.
-- Starter Spring Boot nie był jeszcze uruchomiony w pełnym projekcie Spring — patrz `java/README.md`.
+- Starter Spring Boot jest sprawdzony testami MockMvc i przykładowym serwisem (`java/wwgateway-spring-example`),
+  ale nie był jeszcze wdrożony w rzeczywistym systemie banku (np. ze Spring Security i własnym `ErrorController`) — patrz `java/README.md`.

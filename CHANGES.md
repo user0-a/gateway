@@ -26,3 +26,13 @@
 - `sdk/python/wwg_sdk.py`: klient agenta i weryfikator dla systemów banku (jeden plik).
 - `java/`: weryfikator bez zależności + starter Spring Boot.
 - `docs/PROTOCOL.md`, `docs/SECURITY_REPORT.md`, `tools/mutation_check.py`, `tools/benchmark.py`, `tools/make_java_vectors.py`, CI.
+
+## Poprawki startera Spring po pierwszym buildzie Mavenem
+
+- Interceptor szuka zbuforowanego body także pod wrapperami innych filtrów (`WebUtils.getNativeRequest`); wcześniej
+  każdy wrapper (np. Spring Security) powodował `params_mismatch` dla każdego żądania. Brak zbuforowanego body →
+  `500 body_not_cached` (wcześniej parametry liczone bez body, a kontroler wiązał niezweryfikowane body).
+- Autokonfiguracja ładuje się po `JdbcTemplateAutoConfiguration`; wcześniej `replay-store=jdbc` nigdy nie znajdował
+  `JdbcTemplate` i aplikacja nie startowała.
+- Testy integracyjne (`GatewayStarterIT`, `NoSpringJdbcIT`, failsafe) i moduł `wwgateway-spring-example`.
+- `tools/security_report.py` uruchamia pełne `mvn -B verify` (także na Windows).
