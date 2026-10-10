@@ -12,6 +12,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.HandlerInterceptor;
+import org.springframework.web.util.WebUtils;
 
 /** Verifies @GatewayAction / @GatewayDataAccess endpoints before the controller runs. Fails closed. */
 public final class GatewayAuthorizationInterceptor implements HandlerInterceptor {
@@ -36,7 +37,11 @@ public final class GatewayAuthorizationInterceptor implements HandlerInterceptor
             VerifiedClaims claims;
             if (action != null) {
                 String token = token(request, "GatewayAction");
-                byte[] body = request instanceof CachedBodyHttpServletRequest cached ? cached.body() : new byte[0];
+                // Other filters (e.g. Spring Security) may wrap the request after CachedBodyFilter.
+                CachedBodyHttpServletRequest cached = WebUtils.getNativeRequest(request, CachedBodyHttpServletRequest.class);
+                // Without the cached body the controller would bind a body that was never hashed: fail closed.
+                if (cached == null) throw new VerificationException("body_not_cached", "request body is not available to the gateway (CachedBodyFilter not applied)", 500);
+                byte[] body = cached.body();
                 Object params;
                 try {
                     params = paramsExtractor.extract(request, method, body);
