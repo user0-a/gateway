@@ -11,6 +11,7 @@
   <modules>
     <module>wwgateway-verifier-core</module>
     <module>wwgateway-spring-boot-starter</module>
+    <module>wwgateway-spring-example</module>
   </modules>
 
   <properties>
