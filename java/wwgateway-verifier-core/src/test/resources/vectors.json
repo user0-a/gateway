@@ -1,0 +1,652 @@
+{
+ "now": 1790000002,
+ "issuer": "wwgateway-vectors",
+ "audience": "core-payments",
+ "jwks": {
+  "keys": [
+   {
+    "kty": "OKP",
+    "crv": "Ed25519",
+    "x": "QxwzTfc5gfvY6II2lDmtj-aQ8XX8nn-JfvFpSX1RZqY",
+    "kid": "vec-kid-1",
+    "alg": "EdDSA"
+   }
+  ]
+ },
+ "snapshot": "eyJhbGciOiJFZERTQSIsImtpZCI6InZlYy1raWQtMSIsInR5cCI6Ind3Zy1wb2xpY3krand0In0.eyJleHAiOjE3OTAwMDAwMTAsImlhdCI6MTc5MDAwMDAwMCwiaXNzIjoid3dnYXRld2F5LXZlY3RvcnMiLCJyZXZva2VkX2FnZW50cyI6WyJhZ2VudC1iYWQiXSwicmV2b2tlZF9qdGkiOlsicmV2b2tlZC0xIl0sInJldm9rZWRfcGxhbnMiOltdLCJyaXNrX3RvbGVyYW5jZSI6ImhpZ2giLCJzeXN0ZW1fcmlza190b2xlcmFuY2VzIjp7ImNvcmUtcGF5bWVudHMiOiJoaWdoIn19.obQ5AOQ7KmdyQvJAfjgBpNwLlcc9YQj6u9t28BFcNCo9GZsK3Sr898CTLk9-zd0b-p3TQyh7_1aRdqPizseWDg",
+ "canonical": [
+  {
+   "json": "{\"b\":2,\"a\":1}",
+   "canonical": "{\"a\":1,\"b\":2}",
+   "sha256": "43258cff783fe7036d8a43033f830adfc60ec037382473548ac742b888292777"
+  },
+  {
+   "json": "{\"amount\":\"12.50\",\"to\":2,\"z\":null,\"t\":true,\"f\":false}",
+   "canonical": "{\"amount\":\"12.50\",\"f\":false,\"t\":true,\"to\":2,\"z\":null}",
+   "sha256": "aa90fdd9bf02fd293ca24cc23c0fb1d88bbf13e66658c2b001966024ea3e17f0"
+  },
+  {
+   "json": "[1.0, 1e-7, 0.00001, 1e21, 123.456, -0.5, 1e16, 5e-324, 1.7976931348623157e308]",
+   "canonical": "[1,1e-7,0.00001,1e+21,123.456,-0.5,10000000000000000,5e-324,1.7976931348623157e+308]",
+   "sha256": "62dc09333f08e0ccec09c365b4a77d37d4212a1c10c5d01e3aed3c956ed5a23f"
+  },
+  {
+   "json": "{\"\\u20ac\":1,\"\\ud83d\\ude00\":2,\"a\":3,\"B\":4}",
+   "canonical": "{\"B\":4,\"a\":3,\"€\":1,\"😀\":2}",
+   "sha256": "a0427f6d339638c4acc0f2ab53f05eae648358b67d16bfff94481a0d4e3d6b74"
+  },
+  {
+   "json": "{\"s\":\"z\\u00f3\\u0142\\u0107 \\\" \\\\ \\n \\t \\u0001 \\u007f /\"}",
+   "canonical": "{\"s\":\"zółć \\\" \\\\ \\n \\t \\u0001  /\"}",
+   "sha256": "aab172ccb365f235849facdc84f334ad67addfe67459600bb0cc951c4dda3531"
+  },
+  {
+   "json": "{\"big\":12345678901234567890123,\"neg\":-0,\"exp\":2E3}",
+   "canonical": "{\"big\":12345678901234567890123,\"exp\":2000,\"neg\":0}",
+   "sha256": "8c57c6014ff65be2f086986db4c23ae9d4b55194cfa83e1fdf4a26f697d42545"
+  },
+  {
+   "json": "[0.1, 0.2, 0.30000000000000004, 2.2250738585072014e-308, 9007199254740993.0, 1e-6, 1e-7, 123e-20, 4.35, 0.000001234, 1e300, 3.14159265358979, 100.5]",
+   "canonical": "[0.1,0.2,0.30000000000000004,2.2250738585072014e-308,9007199254740992,0.000001,1e-7,1.23e-18,4.35,0.000001234,1e+300,3.14159265358979,100.5]",
+   "sha256": "42c66c55b0ef27683efcc16df84f4096b316ae7645bc9fef1e68e5dcf577a494"
+  },
+  {
+   "json": "[1e22, 1.5e21, 9.999999999999999e20, 0.5e-6, 2.5e-7, 1.1e-5]",
+   "canonical": "[1e+22,1.5e+21,999999999999999868928,5e-7,2.5e-7,0.000011]",
+   "sha256": "0c82168bfc235b4a58a3fd003fdfd946ad18804316663e0ac0a4e37d3dd73f81"
+  }
+ ],
+ "cases": [
+  {
+   "name": "valid action token",
+   "calls": [
+    {
+     "kind": "action",
+     "token": "eyJhbGciOiJFZERTQSIsImtpZCI6InZlYy1raWQtMSIsInR5cCI6Ind3Zy1hY3Rpb24rand0In0.eyJhY3Rpb24iOiJ0cmFuc2Zlci5jcmVhdGUiLCJhdWQiOiJjb3JlLXBheW1lbnRzIiwiY25mIjp7ImprdCI6Ii1nZVNnV1l6WXhmZ0pFMkdWU2d3Sk1BQXdReFZ3MnBaMFBXMFdheF9qQUUifSwiZXhwIjoxNzkwMDAwMDMwLCJpYXQiOjE3OTAwMDAwMDAsImlzcyI6Ind3Z2F0ZXdheS12ZWN0b3JzIiwianRpIjoidG9rLTEiLCJuYmYiOjE3OTAwMDAwMDAsInBhcmFtc19oYXNoIjoiNDkyYzdiYWY0MjI3NGYwM2JhMGM0Nzk4ZmZhZGViMjE5Nzg4NTczMTYzNGVjMWMyNTY1Y2JiZmQwNjA5NzlkYiIsInBsYW5faGFzaCI6ImFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWIiLCJwbGFuX2lkIjoicGxhbi0xIiwicmlza19sZXZlbCI6Im1lZGl1bSIsInN0ZXBfaWQiOiJzMiIsInN1YiI6ImFnZW50LTEifQ.SikT_b3OBMDc5pxGns399dEyUglSe-7OoEMQbBMk3wqn2cXNuMSDphxvIM-w4RJEWsVBlU6V6hhYkkpn8TUvBQ",
+     "proof": "eyJhbGciOiJFZERTQSIsImp3ayI6eyJjcnYiOiJFZDI1NTE5Iiwia3R5IjoiT0tQIiwieCI6InVaTi1NaU53dzY0cVNINndnaF9qb0xmeFhUTTJFbW5Zcm15NVhXM0VtNlUifSwidHlwIjoid3dnLXByb29mK2p3dCJ9.eyJhdGgiOiJleHlObXZ5d3RzWXpESFY1Q0tHd1pPeGdveXROVkJicmI3YWI4YmprZDFnIiwiaHRtIjoiUE9TVCIsImh0dSI6Imh0dHBzOi8vYmFuay5leGFtcGxlL3RyYW5zZmVycyIsImlhdCI6MTc5MDAwMDAwMCwianRpIjoicC0xIn0.PdqBqWRA-d-PVEoqUTsAr2_7acRjtu4Z-sI49FhDZCt_etwUa5PM3TJePirwZuAFZ0iPoayw3TUWs0kYW2C1BA",
+     "method": "POST",
+     "url": "https://bank.example/transfers",
+     "action": "transfer.create",
+     "params": {
+      "from_account": "PL61109010140000071219812874",
+      "to_account": "DE89370400440532013000",
+      "amount": "4500.00",
+      "title": "Faktura INV-847 żółć"
+     },
+     "expect": "ok"
+    }
+   ]
+  },
+  {
+   "name": "token replay",
+   "calls": [
+    {
+     "kind": "action",
+     "token": "eyJhbGciOiJFZERTQSIsImtpZCI6InZlYy1raWQtMSIsInR5cCI6Ind3Zy1hY3Rpb24rand0In0.eyJhY3Rpb24iOiJ0cmFuc2Zlci5jcmVhdGUiLCJhdWQiOiJjb3JlLXBheW1lbnRzIiwiY25mIjp7ImprdCI6Ii1nZVNnV1l6WXhmZ0pFMkdWU2d3Sk1BQXdReFZ3MnBaMFBXMFdheF9qQUUifSwiZXhwIjoxNzkwMDAwMDMwLCJpYXQiOjE3OTAwMDAwMDAsImlzcyI6Ind3Z2F0ZXdheS12ZWN0b3JzIiwianRpIjoidG9rLTEiLCJuYmYiOjE3OTAwMDAwMDAsInBhcmFtc19oYXNoIjoiNDkyYzdiYWY0MjI3NGYwM2JhMGM0Nzk4ZmZhZGViMjE5Nzg4NTczMTYzNGVjMWMyNTY1Y2JiZmQwNjA5NzlkYiIsInBsYW5faGFzaCI6ImFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWIiLCJwbGFuX2lkIjoicGxhbi0xIiwicmlza19sZXZlbCI6Im1lZGl1bSIsInN0ZXBfaWQiOiJzMiIsInN1YiI6ImFnZW50LTEifQ.SikT_b3OBMDc5pxGns399dEyUglSe-7OoEMQbBMk3wqn2cXNuMSDphxvIM-w4RJEWsVBlU6V6hhYkkpn8TUvBQ",
+     "proof": "eyJhbGciOiJFZERTQSIsImp3ayI6eyJjcnYiOiJFZDI1NTE5Iiwia3R5IjoiT0tQIiwieCI6InVaTi1NaU53dzY0cVNINndnaF9qb0xmeFhUTTJFbW5Zcm15NVhXM0VtNlUifSwidHlwIjoid3dnLXByb29mK2p3dCJ9.eyJhdGgiOiJleHlObXZ5d3RzWXpESFY1Q0tHd1pPeGdveXROVkJicmI3YWI4YmprZDFnIiwiaHRtIjoiUE9TVCIsImh0dSI6Imh0dHBzOi8vYmFuay5leGFtcGxlL3RyYW5zZmVycyIsImlhdCI6MTc5MDAwMDAwMCwianRpIjoiYSJ9.99oOY_wUeGYEz4T9xhaRKqUEPnTxlVaOh8hYTI-ZtRp4fGoKvvI1rnE32a6lVpdFbLGEPKdjfcXFFPAtZBt7AA",
+     "method": "POST",
+     "url": "https://bank.example/transfers",
+     "action": "transfer.create",
+     "params": {
+      "from_account": "PL61109010140000071219812874",
+      "to_account": "DE89370400440532013000",
+      "amount": "4500.00",
+      "title": "Faktura INV-847 żółć"
+     },
+     "expect": "ok"
+    },
+    {
+     "kind": "action",
+     "token": "eyJhbGciOiJFZERTQSIsImtpZCI6InZlYy1raWQtMSIsInR5cCI6Ind3Zy1hY3Rpb24rand0In0.eyJhY3Rpb24iOiJ0cmFuc2Zlci5jcmVhdGUiLCJhdWQiOiJjb3JlLXBheW1lbnRzIiwiY25mIjp7ImprdCI6Ii1nZVNnV1l6WXhmZ0pFMkdWU2d3Sk1BQXdReFZ3MnBaMFBXMFdheF9qQUUifSwiZXhwIjoxNzkwMDAwMDMwLCJpYXQiOjE3OTAwMDAwMDAsImlzcyI6Ind3Z2F0ZXdheS12ZWN0b3JzIiwianRpIjoidG9rLTEiLCJuYmYiOjE3OTAwMDAwMDAsInBhcmFtc19oYXNoIjoiNDkyYzdiYWY0MjI3NGYwM2JhMGM0Nzk4ZmZhZGViMjE5Nzg4NTczMTYzNGVjMWMyNTY1Y2JiZmQwNjA5NzlkYiIsInBsYW5faGFzaCI6ImFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWIiLCJwbGFuX2lkIjoicGxhbi0xIiwicmlza19sZXZlbCI6Im1lZGl1bSIsInN0ZXBfaWQiOiJzMiIsInN1YiI6ImFnZW50LTEifQ.SikT_b3OBMDc5pxGns399dEyUglSe-7OoEMQbBMk3wqn2cXNuMSDphxvIM-w4RJEWsVBlU6V6hhYkkpn8TUvBQ",
+     "proof": "eyJhbGciOiJFZERTQSIsImp3ayI6eyJjcnYiOiJFZDI1NTE5Iiwia3R5IjoiT0tQIiwieCI6InVaTi1NaU53dzY0cVNINndnaF9qb0xmeFhUTTJFbW5Zcm15NVhXM0VtNlUifSwidHlwIjoid3dnLXByb29mK2p3dCJ9.eyJhdGgiOiJleHlObXZ5d3RzWXpESFY1Q0tHd1pPeGdveXROVkJicmI3YWI4YmprZDFnIiwiaHRtIjoiUE9TVCIsImh0dSI6Imh0dHBzOi8vYmFuay5leGFtcGxlL3RyYW5zZmVycyIsImlhdCI6MTc5MDAwMDAwMCwianRpIjoiYiJ9.Ls15Dd2T7_EgXCy0xXR7k3ZQ-hwCCO-b3Bwi04mZvNbz2pj19XkpVU-MvVnnCCbAd8abbRgSft_RhQHvQX74AQ",
+     "method": "POST",
+     "url": "https://bank.example/transfers",
+     "action": "transfer.create",
+     "params": {
+      "from_account": "PL61109010140000071219812874",
+      "to_account": "DE89370400440532013000",
+      "amount": "4500.00",
+      "title": "Faktura INV-847 żółć"
+     },
+     "expect": "token_replay"
+    }
+   ]
+  },
+  {
+   "name": "plan step executes once",
+   "calls": [
+    {
+     "kind": "action",
+     "token": "eyJhbGciOiJFZERTQSIsImtpZCI6InZlYy1raWQtMSIsInR5cCI6Ind3Zy1hY3Rpb24rand0In0.eyJhY3Rpb24iOiJ0cmFuc2Zlci5jcmVhdGUiLCJhdWQiOiJjb3JlLXBheW1lbnRzIiwiY25mIjp7ImprdCI6Ii1nZVNnV1l6WXhmZ0pFMkdWU2d3Sk1BQXdReFZ3MnBaMFBXMFdheF9qQUUifSwiZXhwIjoxNzkwMDAwMDMwLCJpYXQiOjE3OTAwMDAwMDAsImlzcyI6Ind3Z2F0ZXdheS12ZWN0b3JzIiwianRpIjoidG9rLTEiLCJuYmYiOjE3OTAwMDAwMDAsInBhcmFtc19oYXNoIjoiNDkyYzdiYWY0MjI3NGYwM2JhMGM0Nzk4ZmZhZGViMjE5Nzg4NTczMTYzNGVjMWMyNTY1Y2JiZmQwNjA5NzlkYiIsInBsYW5faGFzaCI6ImFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWIiLCJwbGFuX2lkIjoicGxhbi0xIiwicmlza19sZXZlbCI6Im1lZGl1bSIsInN0ZXBfaWQiOiJzMiIsInN1YiI6ImFnZW50LTEifQ.SikT_b3OBMDc5pxGns399dEyUglSe-7OoEMQbBMk3wqn2cXNuMSDphxvIM-w4RJEWsVBlU6V6hhYkkpn8TUvBQ",
+     "proof": "eyJhbGciOiJFZERTQSIsImp3ayI6eyJjcnYiOiJFZDI1NTE5Iiwia3R5IjoiT0tQIiwieCI6InVaTi1NaU53dzY0cVNINndnaF9qb0xmeFhUTTJFbW5Zcm15NVhXM0VtNlUifSwidHlwIjoid3dnLXByb29mK2p3dCJ9.eyJhdGgiOiJleHlObXZ5d3RzWXpESFY1Q0tHd1pPeGdveXROVkJicmI3YWI4YmprZDFnIiwiaHRtIjoiUE9TVCIsImh0dSI6Imh0dHBzOi8vYmFuay5leGFtcGxlL3RyYW5zZmVycyIsImlhdCI6MTc5MDAwMDAwMCwianRpIjoiYSJ9.99oOY_wUeGYEz4T9xhaRKqUEPnTxlVaOh8hYTI-ZtRp4fGoKvvI1rnE32a6lVpdFbLGEPKdjfcXFFPAtZBt7AA",
+     "method": "POST",
+     "url": "https://bank.example/transfers",
+     "action": "transfer.create",
+     "params": {
+      "from_account": "PL61109010140000071219812874",
+      "to_account": "DE89370400440532013000",
+      "amount": "4500.00",
+      "title": "Faktura INV-847 żółć"
+     },
+     "expect": "ok"
+    },
+    {
+     "kind": "action",
+     "token": "eyJhbGciOiJFZERTQSIsImtpZCI6InZlYy1raWQtMSIsInR5cCI6Ind3Zy1hY3Rpb24rand0In0.eyJhY3Rpb24iOiJ0cmFuc2Zlci5jcmVhdGUiLCJhdWQiOiJjb3JlLXBheW1lbnRzIiwiY25mIjp7ImprdCI6Ii1nZVNnV1l6WXhmZ0pFMkdWU2d3Sk1BQXdReFZ3MnBaMFBXMFdheF9qQUUifSwiZXhwIjoxNzkwMDAwMDMwLCJpYXQiOjE3OTAwMDAwMDAsImlzcyI6Ind3Z2F0ZXdheS12ZWN0b3JzIiwianRpIjoidG9rLTIiLCJuYmYiOjE3OTAwMDAwMDAsInBhcmFtc19oYXNoIjoiNDkyYzdiYWY0MjI3NGYwM2JhMGM0Nzk4ZmZhZGViMjE5Nzg4NTczMTYzNGVjMWMyNTY1Y2JiZmQwNjA5NzlkYiIsInBsYW5faWQiOiJwbGFuLTEiLCJyaXNrX2xldmVsIjoibWVkaXVtIiwic3RlcF9pZCI6InMyIiwic3ViIjoiYWdlbnQtMSJ9.8THV63Lg0XL7XtN4EkHdMnsfY9FFNeMUkxtmm0AReU1j98tdxa1sfb10umpD0_RMRi5sTHotZjcJl4MXadcOBQ",
+     "proof": "eyJhbGciOiJFZERTQSIsImp3ayI6eyJjcnYiOiJFZDI1NTE5Iiwia3R5IjoiT0tQIiwieCI6InVaTi1NaU53dzY0cVNINndnaF9qb0xmeFhUTTJFbW5Zcm15NVhXM0VtNlUifSwidHlwIjoid3dnLXByb29mK2p3dCJ9.eyJhdGgiOiI4RjZkY291TGFMSkQzSjNzTk5ydk1IeG50RFlRNF9idEpfNlFSamVzQXpFIiwiaHRtIjoiUE9TVCIsImh0dSI6Imh0dHBzOi8vYmFuay5leGFtcGxlL3RyYW5zZmVycyIsImlhdCI6MTc5MDAwMDAwMCwianRpIjoiYiJ9.7FihqCK0dwYE5cq5-dKVQf2W1w2--B5x17jhd6c3Y6pfnMS_DSwJ7w_uQUB2F7cxhKPLLNypxLFFl_0Nit3OCQ",
+     "method": "POST",
+     "url": "https://bank.example/transfers",
+     "action": "transfer.create",
+     "params": {
+      "from_account": "PL61109010140000071219812874",
+      "to_account": "DE89370400440532013000",
+      "amount": "4500.00",
+      "title": "Faktura INV-847 żółć"
+     },
+     "expect": "step_already_executed"
+    }
+   ]
+  },
+  {
+   "name": "params changed",
+   "calls": [
+    {
+     "kind": "action",
+     "token": "eyJhbGciOiJFZERTQSIsImtpZCI6InZlYy1raWQtMSIsInR5cCI6Ind3Zy1hY3Rpb24rand0In0.eyJhY3Rpb24iOiJ0cmFuc2Zlci5jcmVhdGUiLCJhdWQiOiJjb3JlLXBheW1lbnRzIiwiY25mIjp7ImprdCI6Ii1nZVNnV1l6WXhmZ0pFMkdWU2d3Sk1BQXdReFZ3MnBaMFBXMFdheF9qQUUifSwiZXhwIjoxNzkwMDAwMDMwLCJpYXQiOjE3OTAwMDAwMDAsImlzcyI6Ind3Z2F0ZXdheS12ZWN0b3JzIiwianRpIjoidG9rLTEiLCJuYmYiOjE3OTAwMDAwMDAsInBhcmFtc19oYXNoIjoiNDkyYzdiYWY0MjI3NGYwM2JhMGM0Nzk4ZmZhZGViMjE5Nzg4NTczMTYzNGVjMWMyNTY1Y2JiZmQwNjA5NzlkYiIsInBsYW5faGFzaCI6ImFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWIiLCJwbGFuX2lkIjoicGxhbi0xIiwicmlza19sZXZlbCI6Im1lZGl1bSIsInN0ZXBfaWQiOiJzMiIsInN1YiI6ImFnZW50LTEifQ.SikT_b3OBMDc5pxGns399dEyUglSe-7OoEMQbBMk3wqn2cXNuMSDphxvIM-w4RJEWsVBlU6V6hhYkkpn8TUvBQ",
+     "proof": "eyJhbGciOiJFZERTQSIsImp3ayI6eyJjcnYiOiJFZDI1NTE5Iiwia3R5IjoiT0tQIiwieCI6InVaTi1NaU53dzY0cVNINndnaF9qb0xmeFhUTTJFbW5Zcm15NVhXM0VtNlUifSwidHlwIjoid3dnLXByb29mK2p3dCJ9.eyJhdGgiOiJleHlObXZ5d3RzWXpESFY1Q0tHd1pPeGdveXROVkJicmI3YWI4YmprZDFnIiwiaHRtIjoiUE9TVCIsImh0dSI6Imh0dHBzOi8vYmFuay5leGFtcGxlL3RyYW5zZmVycyIsImlhdCI6MTc5MDAwMDAwMCwianRpIjoicC0xIn0.PdqBqWRA-d-PVEoqUTsAr2_7acRjtu4Z-sI49FhDZCt_etwUa5PM3TJePirwZuAFZ0iPoayw3TUWs0kYW2C1BA",
+     "method": "POST",
+     "url": "https://bank.example/transfers",
+     "action": "transfer.create",
+     "params": {
+      "from_account": "PL61109010140000071219812874",
+      "to_account": "DE89370400440532013000",
+      "amount": "45000.00",
+      "title": "Faktura INV-847 żółć"
+     },
+     "expect": "params_mismatch"
+    }
+   ]
+  },
+  {
+   "name": "wrong action",
+   "calls": [
+    {
+     "kind": "action",
+     "token": "eyJhbGciOiJFZERTQSIsImtpZCI6InZlYy1raWQtMSIsInR5cCI6Ind3Zy1hY3Rpb24rand0In0.eyJhY3Rpb24iOiJ0cmFuc2Zlci5jcmVhdGUiLCJhdWQiOiJjb3JlLXBheW1lbnRzIiwiY25mIjp7ImprdCI6Ii1nZVNnV1l6WXhmZ0pFMkdWU2d3Sk1BQXdReFZ3MnBaMFBXMFdheF9qQUUifSwiZXhwIjoxNzkwMDAwMDMwLCJpYXQiOjE3OTAwMDAwMDAsImlzcyI6Ind3Z2F0ZXdheS12ZWN0b3JzIiwianRpIjoidG9rLTEiLCJuYmYiOjE3OTAwMDAwMDAsInBhcmFtc19oYXNoIjoiNDkyYzdiYWY0MjI3NGYwM2JhMGM0Nzk4ZmZhZGViMjE5Nzg4NTczMTYzNGVjMWMyNTY1Y2JiZmQwNjA5NzlkYiIsInBsYW5faGFzaCI6ImFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWIiLCJwbGFuX2lkIjoicGxhbi0xIiwicmlza19sZXZlbCI6Im1lZGl1bSIsInN0ZXBfaWQiOiJzMiIsInN1YiI6ImFnZW50LTEifQ.SikT_b3OBMDc5pxGns399dEyUglSe-7OoEMQbBMk3wqn2cXNuMSDphxvIM-w4RJEWsVBlU6V6hhYkkpn8TUvBQ",
+     "proof": "eyJhbGciOiJFZERTQSIsImp3ayI6eyJjcnYiOiJFZDI1NTE5Iiwia3R5IjoiT0tQIiwieCI6InVaTi1NaU53dzY0cVNINndnaF9qb0xmeFhUTTJFbW5Zcm15NVhXM0VtNlUifSwidHlwIjoid3dnLXByb29mK2p3dCJ9.eyJhdGgiOiJleHlObXZ5d3RzWXpESFY1Q0tHd1pPeGdveXROVkJicmI3YWI4YmprZDFnIiwiaHRtIjoiUE9TVCIsImh0dSI6Imh0dHBzOi8vYmFuay5leGFtcGxlL3RyYW5zZmVycyIsImlhdCI6MTc5MDAwMDAwMCwianRpIjoicC0xIn0.PdqBqWRA-d-PVEoqUTsAr2_7acRjtu4Z-sI49FhDZCt_etwUa5PM3TJePirwZuAFZ0iPoayw3TUWs0kYW2C1BA",
+     "method": "POST",
+     "url": "https://bank.example/transfers",
+     "action": "account.close",
+     "params": {
+      "from_account": "PL61109010140000071219812874",
+      "to_account": "DE89370400440532013000",
+      "amount": "4500.00",
+      "title": "Faktura INV-847 żółć"
+     },
+     "expect": "wrong_action"
+    }
+   ]
+  },
+  {
+   "name": "wrong audience",
+   "calls": [
+    {
+     "kind": "action",
+     "token": "eyJhbGciOiJFZERTQSIsImtpZCI6InZlYy1raWQtMSIsInR5cCI6Ind3Zy1hY3Rpb24rand0In0.eyJhY3Rpb24iOiJ0cmFuc2Zlci5jcmVhdGUiLCJhdWQiOiJjYXJkLXN5c3RlbSIsImNuZiI6eyJqa3QiOiItZ2VTZ1dZell4ZmdKRTJHVlNnd0pNQUF3UXhWdzJwWjBQVzBXYXhfakFFIn0sImV4cCI6MTc5MDAwMDAzMCwiaWF0IjoxNzkwMDAwMDAwLCJpc3MiOiJ3d2dhdGV3YXktdmVjdG9ycyIsImp0aSI6InRvay0xIiwibmJmIjoxNzkwMDAwMDAwLCJwYXJhbXNfaGFzaCI6IjQ5MmM3YmFmNDIyNzRmMDNiYTBjNDc5OGZmYWRlYjIxOTc4ODU3MzE2MzRlYzFjMjU2NWNiYmZkMDYwOTc5ZGIiLCJyaXNrX2xldmVsIjoibWVkaXVtIiwic3ViIjoiYWdlbnQtMSJ9.g9VqTK4zVdqEPzythxhX1kJiMHDKJUzVYfYj8uYhq1vUsPeI1PbrA8Sn21R6khDntFEoK0qjSXt6m5JJe7kfDw",
+     "proof": null,
+     "method": "POST",
+     "url": "https://bank.example/transfers",
+     "action": "transfer.create",
+     "params": {
+      "from_account": "PL61109010140000071219812874",
+      "to_account": "DE89370400440532013000",
+      "amount": "4500.00",
+      "title": "Faktura INV-847 żółć"
+     },
+     "expect": "wrong_audience"
+    }
+   ]
+  },
+  {
+   "name": "wrong issuer",
+   "calls": [
+    {
+     "kind": "action",
+     "token": "eyJhbGciOiJFZERTQSIsImtpZCI6InZlYy1raWQtMSIsInR5cCI6Ind3Zy1hY3Rpb24rand0In0.eyJhY3Rpb24iOiJ0cmFuc2Zlci5jcmVhdGUiLCJhdWQiOiJjb3JlLXBheW1lbnRzIiwiY25mIjp7ImprdCI6Ii1nZVNnV1l6WXhmZ0pFMkdWU2d3Sk1BQXdReFZ3MnBaMFBXMFdheF9qQUUifSwiZXhwIjoxNzkwMDAwMDMwLCJpYXQiOjE3OTAwMDAwMDAsImlzcyI6ImV2aWwiLCJqdGkiOiJ0b2stMSIsIm5iZiI6MTc5MDAwMDAwMCwicGFyYW1zX2hhc2giOiI0OTJjN2JhZjQyMjc0ZjAzYmEwYzQ3OThmZmFkZWIyMTk3ODg1NzMxNjM0ZWMxYzI1NjVjYmJmZDA2MDk3OWRiIiwicmlza19sZXZlbCI6Im1lZGl1bSIsInN1YiI6ImFnZW50LTEifQ._6TZdlZYVTYArBEGAK1Yg2jajUI-Mj2XinrRFXK9lp6ARSULMWfkB-O78SrMhPl6trbwmKkCbdgIArDG81bICg",
+     "proof": null,
+     "method": "POST",
+     "url": "https://bank.example/transfers",
+     "action": "transfer.create",
+     "params": {
+      "from_account": "PL61109010140000071219812874",
+      "to_account": "DE89370400440532013000",
+      "amount": "4500.00",
+      "title": "Faktura INV-847 żółć"
+     },
+     "expect": "wrong_issuer"
+    }
+   ]
+  },
+  {
+   "name": "expired",
+   "calls": [
+    {
+     "kind": "action",
+     "token": "eyJhbGciOiJFZERTQSIsImtpZCI6InZlYy1raWQtMSIsInR5cCI6Ind3Zy1hY3Rpb24rand0In0.eyJhY3Rpb24iOiJ0cmFuc2Zlci5jcmVhdGUiLCJhdWQiOiJjb3JlLXBheW1lbnRzIiwiY25mIjp7ImprdCI6Ii1nZVNnV1l6WXhmZ0pFMkdWU2d3Sk1BQXdReFZ3MnBaMFBXMFdheF9qQUUifSwiZXhwIjoxNzg5OTk5OTQwLCJpYXQiOjE3OTAwMDAwMDAsImlzcyI6Ind3Z2F0ZXdheS12ZWN0b3JzIiwianRpIjoidG9rLTEiLCJuYmYiOjE3OTAwMDAwMDAsInBhcmFtc19oYXNoIjoiNDkyYzdiYWY0MjI3NGYwM2JhMGM0Nzk4ZmZhZGViMjE5Nzg4NTczMTYzNGVjMWMyNTY1Y2JiZmQwNjA5NzlkYiIsInJpc2tfbGV2ZWwiOiJtZWRpdW0iLCJzdWIiOiJhZ2VudC0xIn0.6zwTspkr5LWVDZuLp4SjLxo5K5izYL8bLLRxiv_QxvrTBs56IzKvtr339t_FSLF_En0RFBZRYwJ7X9zLCibdCQ",
+     "proof": null,
+     "method": "POST",
+     "url": "https://bank.example/transfers",
+     "action": "transfer.create",
+     "params": {
+      "from_account": "PL61109010140000071219812874",
+      "to_account": "DE89370400440532013000",
+      "amount": "4500.00",
+      "title": "Faktura INV-847 żółć"
+     },
+     "expect": "expired"
+    }
+   ]
+  },
+  {
+   "name": "not yet valid",
+   "calls": [
+    {
+     "kind": "action",
+     "token": "eyJhbGciOiJFZERTQSIsImtpZCI6InZlYy1raWQtMSIsInR5cCI6Ind3Zy1hY3Rpb24rand0In0.eyJhY3Rpb24iOiJ0cmFuc2Zlci5jcmVhdGUiLCJhdWQiOiJjb3JlLXBheW1lbnRzIiwiY25mIjp7ImprdCI6Ii1nZVNnV1l6WXhmZ0pFMkdWU2d3Sk1BQXdReFZ3MnBaMFBXMFdheF9qQUUifSwiZXhwIjoxNzkwMDAwMDMwLCJpYXQiOjE3OTAwMDAwMDAsImlzcyI6Ind3Z2F0ZXdheS12ZWN0b3JzIiwianRpIjoidG9rLTEiLCJuYmYiOjE3OTAwMDA2MDAsInBhcmFtc19oYXNoIjoiNDkyYzdiYWY0MjI3NGYwM2JhMGM0Nzk4ZmZhZGViMjE5Nzg4NTczMTYzNGVjMWMyNTY1Y2JiZmQwNjA5NzlkYiIsInJpc2tfbGV2ZWwiOiJtZWRpdW0iLCJzdWIiOiJhZ2VudC0xIn0.-A-nUrsYesRq02o_fjmsIEbYq39gNU7_GcEix6Xgw8WVYrgNicvswvbkSfo4fp0wlLTxSNXbVE3632FfBIn-Bw",
+     "proof": null,
+     "method": "POST",
+     "url": "https://bank.example/transfers",
+     "action": "transfer.create",
+     "params": {
+      "from_account": "PL61109010140000071219812874",
+      "to_account": "DE89370400440532013000",
+      "amount": "4500.00",
+      "title": "Faktura INV-847 żółć"
+     },
+     "expect": "not_yet_valid"
+    }
+   ]
+  },
+  {
+   "name": "tampered payload",
+   "calls": [
+    {
+     "kind": "action",
+     "token": "eyJhbGciOiJFZERTQSIsImtpZCI6InZlYy1raWQtMSIsInR5cCI6Ind3Zy1hY3Rpb24rand0In0.eyJhY3Rpb24iOiJ0cmFuc2Zlci5jcmVhdGUiLCJhdWQiOiJjb3JlLXBheW1lbnRzIiwiY25mIjp7ImprdCI6Ii1nZVNnV1l6WXhmZ0pFMkdWU2d3Sk1BQXdReFZ3MnBaMFBXMFdheF9qQUUifSwiZXhwIjoxNzkwMDAwMDMwLCJpYXQiOjE3OTAwMDAwMDAsImlzcyI6Ind3Z2F0ZXdheS12ZWN0b3JzIiwianRpIjoidG9rLTEiLCJuYmYiOjE3OTAwMDAwMDAsInBhcmFtc19oYXNoIjoiMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMCIsInBsYW5faGFzaCI6ImFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWIiLCJwbGFuX2lkIjoicGxhbi0xIiwicmlza19sZXZlbCI6Im1lZGl1bSIsInN0ZXBfaWQiOiJzMiIsInN1YiI6ImFnZW50LTEifQ.SikT_b3OBMDc5pxGns399dEyUglSe-7OoEMQbBMk3wqn2cXNuMSDphxvIM-w4RJEWsVBlU6V6hhYkkpn8TUvBQ",
+     "proof": null,
+     "method": "POST",
+     "url": "https://bank.example/transfers",
+     "action": "transfer.create",
+     "params": {
+      "from_account": "PL61109010140000071219812874",
+      "to_account": "DE89370400440532013000",
+      "amount": "4500.00",
+      "title": "Faktura INV-847 żółć"
+     },
+     "expect": "bad_signature"
+    }
+   ]
+  },
+  {
+   "name": "alg confusion",
+   "calls": [
+    {
+     "kind": "action",
+     "token": "eyJhbGciOiJIUzI1NiIsImtpZCI6InZlYy1raWQtMSIsInR5cCI6Ind3Zy1hY3Rpb24rand0In0.eyJhY3Rpb24iOiJ0cmFuc2Zlci5jcmVhdGUiLCJhdWQiOiJjb3JlLXBheW1lbnRzIiwiY25mIjp7ImprdCI6Ii1nZVNnV1l6WXhmZ0pFMkdWU2d3Sk1BQXdReFZ3MnBaMFBXMFdheF9qQUUifSwiZXhwIjoxNzkwMDAwMDMwLCJpYXQiOjE3OTAwMDAwMDAsImlzcyI6Ind3Z2F0ZXdheS12ZWN0b3JzIiwianRpIjoidG9rLTEiLCJuYmYiOjE3OTAwMDAwMDAsInBhcmFtc19oYXNoIjoiNDkyYzdiYWY0MjI3NGYwM2JhMGM0Nzk4ZmZhZGViMjE5Nzg4NTczMTYzNGVjMWMyNTY1Y2JiZmQwNjA5NzlkYiIsInBsYW5faGFzaCI6ImFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWIiLCJwbGFuX2lkIjoicGxhbi0xIiwicmlza19sZXZlbCI6Im1lZGl1bSIsInN0ZXBfaWQiOiJzMiIsInN1YiI6ImFnZW50LTEifQ.SikT_b3OBMDc5pxGns399dEyUglSe-7OoEMQbBMk3wqn2cXNuMSDphxvIM-w4RJEWsVBlU6V6hhYkkpn8TUvBQ",
+     "proof": null,
+     "method": "POST",
+     "url": "https://bank.example/transfers",
+     "action": "transfer.create",
+     "params": {
+      "from_account": "PL61109010140000071219812874",
+      "to_account": "DE89370400440532013000",
+      "amount": "4500.00",
+      "title": "Faktura INV-847 żółć"
+     },
+     "expect": "bad_alg"
+    }
+   ]
+  },
+  {
+   "name": "unknown kid",
+   "calls": [
+    {
+     "kind": "action",
+     "token": "eyJhbGciOiJFZERTQSIsImtpZCI6Im5vcGUiLCJ0eXAiOiJ3d2ctYWN0aW9uK2p3dCJ9.eyJhY3Rpb24iOiJ0cmFuc2Zlci5jcmVhdGUiLCJhdWQiOiJjb3JlLXBheW1lbnRzIiwiY25mIjp7ImprdCI6Ii1nZVNnV1l6WXhmZ0pFMkdWU2d3Sk1BQXdReFZ3MnBaMFBXMFdheF9qQUUifSwiZXhwIjoxNzkwMDAwMDMwLCJpYXQiOjE3OTAwMDAwMDAsImlzcyI6Ind3Z2F0ZXdheS12ZWN0b3JzIiwianRpIjoidG9rLTEiLCJuYmYiOjE3OTAwMDAwMDAsInBhcmFtc19oYXNoIjoiNDkyYzdiYWY0MjI3NGYwM2JhMGM0Nzk4ZmZhZGViMjE5Nzg4NTczMTYzNGVjMWMyNTY1Y2JiZmQwNjA5NzlkYiIsInJpc2tfbGV2ZWwiOiJtZWRpdW0iLCJzdWIiOiJhZ2VudC0xIn0.rQu_wDjrASK-vyINBg95e2sGCBRSgQO1AUN6Gb1CjgXmkeM3mYsknqGzIDo-0FrGTS74s0xD7yx3lqvTL3p_Dg",
+     "proof": null,
+     "method": "POST",
+     "url": "https://bank.example/transfers",
+     "action": "transfer.create",
+     "params": {
+      "from_account": "PL61109010140000071219812874",
+      "to_account": "DE89370400440532013000",
+      "amount": "4500.00",
+      "title": "Faktura INV-847 żółć"
+     },
+     "expect": "unknown_kid"
+    }
+   ]
+  },
+  {
+   "name": "data token as action token",
+   "calls": [
+    {
+     "kind": "action",
+     "token": "eyJhbGciOiJFZERTQSIsImtpZCI6InZlYy1raWQtMSIsInR5cCI6Ind3Zy1kYXRhK2p3dCJ9.eyJhdWQiOiJjb3JlLXBheW1lbnRzIiwiY25mIjp7ImprdCI6Ii1nZVNnV1l6WXhmZ0pFMkdWU2d3Sk1BQXdReFZ3MnBaMFBXMFdheF9qQUUifSwiZXhwIjoxNzkwMDAwMDMwLCJpYXQiOjE3OTAwMDAwMDAsImlzcyI6Ind3Z2F0ZXdheS12ZWN0b3JzIiwianRpIjoidG9rLTEiLCJuYmYiOjE3OTAwMDAwMDAsInJpc2tfbGV2ZWwiOiJtZWRpdW0iLCJzdWIiOiJhZ2VudC0xIiwidGFibGVzIjpbImFjY291bnRzIl19.Q5B54YggsIn9j-8AhPjL223E-QW_G5HN6fHenPytU-ZeU3PXRMaY1uB27_xam3pIT2eOdqLaOETNhahKBH1RDw",
+     "proof": null,
+     "method": "POST",
+     "url": "https://bank.example/transfers",
+     "action": "transfer.create",
+     "params": {
+      "from_account": "PL61109010140000071219812874",
+      "to_account": "DE89370400440532013000",
+      "amount": "4500.00",
+      "title": "Faktura INV-847 żółć"
+     },
+     "expect": "wrong_token_type"
+    }
+   ]
+  },
+  {
+   "name": "proof missing",
+   "calls": [
+    {
+     "kind": "action",
+     "token": "eyJhbGciOiJFZERTQSIsImtpZCI6InZlYy1raWQtMSIsInR5cCI6Ind3Zy1hY3Rpb24rand0In0.eyJhY3Rpb24iOiJ0cmFuc2Zlci5jcmVhdGUiLCJhdWQiOiJjb3JlLXBheW1lbnRzIiwiY25mIjp7ImprdCI6Ii1nZVNnV1l6WXhmZ0pFMkdWU2d3Sk1BQXdReFZ3MnBaMFBXMFdheF9qQUUifSwiZXhwIjoxNzkwMDAwMDMwLCJpYXQiOjE3OTAwMDAwMDAsImlzcyI6Ind3Z2F0ZXdheS12ZWN0b3JzIiwianRpIjoidG9rLTEiLCJuYmYiOjE3OTAwMDAwMDAsInBhcmFtc19oYXNoIjoiNDkyYzdiYWY0MjI3NGYwM2JhMGM0Nzk4ZmZhZGViMjE5Nzg4NTczMTYzNGVjMWMyNTY1Y2JiZmQwNjA5NzlkYiIsInBsYW5faGFzaCI6ImFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWIiLCJwbGFuX2lkIjoicGxhbi0xIiwicmlza19sZXZlbCI6Im1lZGl1bSIsInN0ZXBfaWQiOiJzMiIsInN1YiI6ImFnZW50LTEifQ.SikT_b3OBMDc5pxGns399dEyUglSe-7OoEMQbBMk3wqn2cXNuMSDphxvIM-w4RJEWsVBlU6V6hhYkkpn8TUvBQ",
+     "proof": null,
+     "method": "POST",
+     "url": "https://bank.example/transfers",
+     "action": "transfer.create",
+     "params": {
+      "from_account": "PL61109010140000071219812874",
+      "to_account": "DE89370400440532013000",
+      "amount": "4500.00",
+      "title": "Faktura INV-847 żółć"
+     },
+     "expect": "proof_missing"
+    }
+   ]
+  },
+  {
+   "name": "proof by thief",
+   "calls": [
+    {
+     "kind": "action",
+     "token": "eyJhbGciOiJFZERTQSIsImtpZCI6InZlYy1raWQtMSIsInR5cCI6Ind3Zy1hY3Rpb24rand0In0.eyJhY3Rpb24iOiJ0cmFuc2Zlci5jcmVhdGUiLCJhdWQiOiJjb3JlLXBheW1lbnRzIiwiY25mIjp7ImprdCI6Ii1nZVNnV1l6WXhmZ0pFMkdWU2d3Sk1BQXdReFZ3MnBaMFBXMFdheF9qQUUifSwiZXhwIjoxNzkwMDAwMDMwLCJpYXQiOjE3OTAwMDAwMDAsImlzcyI6Ind3Z2F0ZXdheS12ZWN0b3JzIiwianRpIjoidG9rLTEiLCJuYmYiOjE3OTAwMDAwMDAsInBhcmFtc19oYXNoIjoiNDkyYzdiYWY0MjI3NGYwM2JhMGM0Nzk4ZmZhZGViMjE5Nzg4NTczMTYzNGVjMWMyNTY1Y2JiZmQwNjA5NzlkYiIsInBsYW5faGFzaCI6ImFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWIiLCJwbGFuX2lkIjoicGxhbi0xIiwicmlza19sZXZlbCI6Im1lZGl1bSIsInN0ZXBfaWQiOiJzMiIsInN1YiI6ImFnZW50LTEifQ.SikT_b3OBMDc5pxGns399dEyUglSe-7OoEMQbBMk3wqn2cXNuMSDphxvIM-w4RJEWsVBlU6V6hhYkkpn8TUvBQ",
+     "proof": "eyJhbGciOiJFZERTQSIsImp3ayI6eyJjcnYiOiJFZDI1NTE5Iiwia3R5IjoiT0tQIiwieCI6Ikw4R3ZaUVFuTU1qcjZPRno5c19DV1lhZmo5WGk3SHdRdDI0NFZYaVhlbTAifSwidHlwIjoid3dnLXByb29mK2p3dCJ9.eyJhdGgiOiJleHlObXZ5d3RzWXpESFY1Q0tHd1pPeGdveXROVkJicmI3YWI4YmprZDFnIiwiaHRtIjoiUE9TVCIsImh0dSI6Imh0dHBzOi8vYmFuay5leGFtcGxlL3RyYW5zZmVycyIsImlhdCI6MTc5MDAwMDAwMCwianRpIjoicC0xIn0.euWr1ams8bNwyc_q-qN1Hj4PlPpG5of7VKoEo4tQ4qMtnz91Z3G9dDPDpyxzxkpT6dSWL30V22flZNtvK3yvAg",
+     "method": "POST",
+     "url": "https://bank.example/transfers",
+     "action": "transfer.create",
+     "params": {
+      "from_account": "PL61109010140000071219812874",
+      "to_account": "DE89370400440532013000",
+      "amount": "4500.00",
+      "title": "Faktura INV-847 żółć"
+     },
+     "expect": "proof_key_mismatch"
+    }
+   ]
+  },
+  {
+   "name": "proof wrong method",
+   "calls": [
+    {
+     "kind": "action",
+     "token": "eyJhbGciOiJFZERTQSIsImtpZCI6InZlYy1raWQtMSIsInR5cCI6Ind3Zy1hY3Rpb24rand0In0.eyJhY3Rpb24iOiJ0cmFuc2Zlci5jcmVhdGUiLCJhdWQiOiJjb3JlLXBheW1lbnRzIiwiY25mIjp7ImprdCI6Ii1nZVNnV1l6WXhmZ0pFMkdWU2d3Sk1BQXdReFZ3MnBaMFBXMFdheF9qQUUifSwiZXhwIjoxNzkwMDAwMDMwLCJpYXQiOjE3OTAwMDAwMDAsImlzcyI6Ind3Z2F0ZXdheS12ZWN0b3JzIiwianRpIjoidG9rLTEiLCJuYmYiOjE3OTAwMDAwMDAsInBhcmFtc19oYXNoIjoiNDkyYzdiYWY0MjI3NGYwM2JhMGM0Nzk4ZmZhZGViMjE5Nzg4NTczMTYzNGVjMWMyNTY1Y2JiZmQwNjA5NzlkYiIsInBsYW5faGFzaCI6ImFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWIiLCJwbGFuX2lkIjoicGxhbi0xIiwicmlza19sZXZlbCI6Im1lZGl1bSIsInN0ZXBfaWQiOiJzMiIsInN1YiI6ImFnZW50LTEifQ.SikT_b3OBMDc5pxGns399dEyUglSe-7OoEMQbBMk3wqn2cXNuMSDphxvIM-w4RJEWsVBlU6V6hhYkkpn8TUvBQ",
+     "proof": "eyJhbGciOiJFZERTQSIsImp3ayI6eyJjcnYiOiJFZDI1NTE5Iiwia3R5IjoiT0tQIiwieCI6InVaTi1NaU53dzY0cVNINndnaF9qb0xmeFhUTTJFbW5Zcm15NVhXM0VtNlUifSwidHlwIjoid3dnLXByb29mK2p3dCJ9.eyJhdGgiOiJleHlObXZ5d3RzWXpESFY1Q0tHd1pPeGdveXROVkJicmI3YWI4YmprZDFnIiwiaHRtIjoiR0VUIiwiaHR1IjoiaHR0cHM6Ly9iYW5rLmV4YW1wbGUvdHJhbnNmZXJzIiwiaWF0IjoxNzkwMDAwMDAwLCJqdGkiOiJwLTEifQ.CLvm9OYOHvxH3HBPhJDX0CDiOk7-GrfINEPGil3zIccD1CwUZFNQkKdOLe_6J8kvHOHC1U76JDi6hxpeB_ehAQ",
+     "method": "POST",
+     "url": "https://bank.example/transfers",
+     "action": "transfer.create",
+     "params": {
+      "from_account": "PL61109010140000071219812874",
+      "to_account": "DE89370400440532013000",
+      "amount": "4500.00",
+      "title": "Faktura INV-847 żółć"
+     },
+     "expect": "proof_method_mismatch"
+    }
+   ]
+  },
+  {
+   "name": "proof wrong url",
+   "calls": [
+    {
+     "kind": "action",
+     "token": "eyJhbGciOiJFZERTQSIsImtpZCI6InZlYy1raWQtMSIsInR5cCI6Ind3Zy1hY3Rpb24rand0In0.eyJhY3Rpb24iOiJ0cmFuc2Zlci5jcmVhdGUiLCJhdWQiOiJjb3JlLXBheW1lbnRzIiwiY25mIjp7ImprdCI6Ii1nZVNnV1l6WXhmZ0pFMkdWU2d3Sk1BQXdReFZ3MnBaMFBXMFdheF9qQUUifSwiZXhwIjoxNzkwMDAwMDMwLCJpYXQiOjE3OTAwMDAwMDAsImlzcyI6Ind3Z2F0ZXdheS12ZWN0b3JzIiwianRpIjoidG9rLTEiLCJuYmYiOjE3OTAwMDAwMDAsInBhcmFtc19oYXNoIjoiNDkyYzdiYWY0MjI3NGYwM2JhMGM0Nzk4ZmZhZGViMjE5Nzg4NTczMTYzNGVjMWMyNTY1Y2JiZmQwNjA5NzlkYiIsInBsYW5faGFzaCI6ImFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWIiLCJwbGFuX2lkIjoicGxhbi0xIiwicmlza19sZXZlbCI6Im1lZGl1bSIsInN0ZXBfaWQiOiJzMiIsInN1YiI6ImFnZW50LTEifQ.SikT_b3OBMDc5pxGns399dEyUglSe-7OoEMQbBMk3wqn2cXNuMSDphxvIM-w4RJEWsVBlU6V6hhYkkpn8TUvBQ",
+     "proof": "eyJhbGciOiJFZERTQSIsImp3ayI6eyJjcnYiOiJFZDI1NTE5Iiwia3R5IjoiT0tQIiwieCI6InVaTi1NaU53dzY0cVNINndnaF9qb0xmeFhUTTJFbW5Zcm15NVhXM0VtNlUifSwidHlwIjoid3dnLXByb29mK2p3dCJ9.eyJhdGgiOiJleHlObXZ5d3RzWXpESFY1Q0tHd1pPeGdveXROVkJicmI3YWI4YmprZDFnIiwiaHRtIjoiUE9TVCIsImh0dSI6Imh0dHBzOi8vYmFuay5leGFtcGxlL2FjY291bnRzLzEiLCJpYXQiOjE3OTAwMDAwMDAsImp0aSI6InAtMSJ9.b-6-nw7wTOjXY3HMIIkVYQnlSCxUsF4OOOawjSh4e0yEGn9gqk5sW_GJNhWbiEP1TYW9vXqm1q9zt6X-UV7OBg",
+     "method": "POST",
+     "url": "https://bank.example/transfers",
+     "action": "transfer.create",
+     "params": {
+      "from_account": "PL61109010140000071219812874",
+      "to_account": "DE89370400440532013000",
+      "amount": "4500.00",
+      "title": "Faktura INV-847 żółć"
+     },
+     "expect": "proof_url_mismatch"
+    }
+   ]
+  },
+  {
+   "name": "proof for another token",
+   "calls": [
+    {
+     "kind": "action",
+     "token": "eyJhbGciOiJFZERTQSIsImtpZCI6InZlYy1raWQtMSIsInR5cCI6Ind3Zy1hY3Rpb24rand0In0.eyJhY3Rpb24iOiJ0cmFuc2Zlci5jcmVhdGUiLCJhdWQiOiJjb3JlLXBheW1lbnRzIiwiY25mIjp7ImprdCI6Ii1nZVNnV1l6WXhmZ0pFMkdWU2d3Sk1BQXdReFZ3MnBaMFBXMFdheF9qQUUifSwiZXhwIjoxNzkwMDAwMDMwLCJpYXQiOjE3OTAwMDAwMDAsImlzcyI6Ind3Z2F0ZXdheS12ZWN0b3JzIiwianRpIjoidG9rLTEiLCJuYmYiOjE3OTAwMDAwMDAsInBhcmFtc19oYXNoIjoiNDkyYzdiYWY0MjI3NGYwM2JhMGM0Nzk4ZmZhZGViMjE5Nzg4NTczMTYzNGVjMWMyNTY1Y2JiZmQwNjA5NzlkYiIsInBsYW5faGFzaCI6ImFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWIiLCJwbGFuX2lkIjoicGxhbi0xIiwicmlza19sZXZlbCI6Im1lZGl1bSIsInN0ZXBfaWQiOiJzMiIsInN1YiI6ImFnZW50LTEifQ.SikT_b3OBMDc5pxGns399dEyUglSe-7OoEMQbBMk3wqn2cXNuMSDphxvIM-w4RJEWsVBlU6V6hhYkkpn8TUvBQ",
+     "proof": "eyJhbGciOiJFZERTQSIsImp3ayI6eyJjcnYiOiJFZDI1NTE5Iiwia3R5IjoiT0tQIiwieCI6InVaTi1NaU53dzY0cVNINndnaF9qb0xmeFhUTTJFbW5Zcm15NVhXM0VtNlUifSwidHlwIjoid3dnLXByb29mK2p3dCJ9.eyJhdGgiOiI4RjZkY291TGFMSkQzSjNzTk5ydk1IeG50RFlRNF9idEpfNlFSamVzQXpFIiwiaHRtIjoiUE9TVCIsImh0dSI6Imh0dHBzOi8vYmFuay5leGFtcGxlL3RyYW5zZmVycyIsImlhdCI6MTc5MDAwMDAwMCwianRpIjoicC0xIn0.hSZiCVQv9N3nbp-o-o6P6tBi23Vfs4A0OLlcWTmeKIrl0VehKsTV_ppQvEJefiCmKpSKF7X7mvbGydkjl42GCA",
+     "method": "POST",
+     "url": "https://bank.example/transfers",
+     "action": "transfer.create",
+     "params": {
+      "from_account": "PL61109010140000071219812874",
+      "to_account": "DE89370400440532013000",
+      "amount": "4500.00",
+      "title": "Faktura INV-847 żółć"
+     },
+     "expect": "proof_token_mismatch"
+    }
+   ]
+  },
+  {
+   "name": "stale proof",
+   "calls": [
+    {
+     "kind": "action",
+     "token": "eyJhbGciOiJFZERTQSIsImtpZCI6InZlYy1raWQtMSIsInR5cCI6Ind3Zy1hY3Rpb24rand0In0.eyJhY3Rpb24iOiJ0cmFuc2Zlci5jcmVhdGUiLCJhdWQiOiJjb3JlLXBheW1lbnRzIiwiY25mIjp7ImprdCI6Ii1nZVNnV1l6WXhmZ0pFMkdWU2d3Sk1BQXdReFZ3MnBaMFBXMFdheF9qQUUifSwiZXhwIjoxNzkwMDAwMDMwLCJpYXQiOjE3OTAwMDAwMDAsImlzcyI6Ind3Z2F0ZXdheS12ZWN0b3JzIiwianRpIjoidG9rLTEiLCJuYmYiOjE3OTAwMDAwMDAsInBhcmFtc19oYXNoIjoiNDkyYzdiYWY0MjI3NGYwM2JhMGM0Nzk4ZmZhZGViMjE5Nzg4NTczMTYzNGVjMWMyNTY1Y2JiZmQwNjA5NzlkYiIsInBsYW5faGFzaCI6ImFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWIiLCJwbGFuX2lkIjoicGxhbi0xIiwicmlza19sZXZlbCI6Im1lZGl1bSIsInN0ZXBfaWQiOiJzMiIsInN1YiI6ImFnZW50LTEifQ.SikT_b3OBMDc5pxGns399dEyUglSe-7OoEMQbBMk3wqn2cXNuMSDphxvIM-w4RJEWsVBlU6V6hhYkkpn8TUvBQ",
+     "proof": "eyJhbGciOiJFZERTQSIsImp3ayI6eyJjcnYiOiJFZDI1NTE5Iiwia3R5IjoiT0tQIiwieCI6InVaTi1NaU53dzY0cVNINndnaF9qb0xmeFhUTTJFbW5Zcm15NVhXM0VtNlUifSwidHlwIjoid3dnLXByb29mK2p3dCJ9.eyJhdGgiOiJleHlObXZ5d3RzWXpESFY1Q0tHd1pPeGdveXROVkJicmI3YWI4YmprZDFnIiwiaHRtIjoiUE9TVCIsImh0dSI6Imh0dHBzOi8vYmFuay5leGFtcGxlL3RyYW5zZmVycyIsImlhdCI6MTc4OTk5OTcwMCwianRpIjoicC0xIn0.IbyLdvjeqH5imnABeUGIPJUZzG7zzcP3rVVxAFLhF9FT7lDLCLfBlT52ycnVQ7k-NTQa2ZSkC_UriqLiQ8-RBA",
+     "method": "POST",
+     "url": "https://bank.example/transfers",
+     "action": "transfer.create",
+     "params": {
+      "from_account": "PL61109010140000071219812874",
+      "to_account": "DE89370400440532013000",
+      "amount": "4500.00",
+      "title": "Faktura INV-847 żółć"
+     },
+     "expect": "proof_stale"
+    }
+   ]
+  },
+  {
+   "name": "proof replay",
+   "calls": [
+    {
+     "kind": "action",
+     "token": "eyJhbGciOiJFZERTQSIsImtpZCI6InZlYy1raWQtMSIsInR5cCI6Ind3Zy1hY3Rpb24rand0In0.eyJhY3Rpb24iOiJ0cmFuc2Zlci5jcmVhdGUiLCJhdWQiOiJjb3JlLXBheW1lbnRzIiwiY25mIjp7ImprdCI6Ii1nZVNnV1l6WXhmZ0pFMkdWU2d3Sk1BQXdReFZ3MnBaMFBXMFdheF9qQUUifSwiZXhwIjoxNzkwMDAwMDMwLCJpYXQiOjE3OTAwMDAwMDAsImlzcyI6Ind3Z2F0ZXdheS12ZWN0b3JzIiwianRpIjoidG9rLTEiLCJuYmYiOjE3OTAwMDAwMDAsInBhcmFtc19oYXNoIjoiNDkyYzdiYWY0MjI3NGYwM2JhMGM0Nzk4ZmZhZGViMjE5Nzg4NTczMTYzNGVjMWMyNTY1Y2JiZmQwNjA5NzlkYiIsInBsYW5faGFzaCI6ImFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWIiLCJwbGFuX2lkIjoicGxhbi0xIiwicmlza19sZXZlbCI6Im1lZGl1bSIsInN0ZXBfaWQiOiJzMiIsInN1YiI6ImFnZW50LTEifQ.SikT_b3OBMDc5pxGns399dEyUglSe-7OoEMQbBMk3wqn2cXNuMSDphxvIM-w4RJEWsVBlU6V6hhYkkpn8TUvBQ",
+     "proof": "eyJhbGciOiJFZERTQSIsImp3ayI6eyJjcnYiOiJFZDI1NTE5Iiwia3R5IjoiT0tQIiwieCI6InVaTi1NaU53dzY0cVNINndnaF9qb0xmeFhUTTJFbW5Zcm15NVhXM0VtNlUifSwidHlwIjoid3dnLXByb29mK2p3dCJ9.eyJhdGgiOiJleHlObXZ5d3RzWXpESFY1Q0tHd1pPeGdveXROVkJicmI3YWI4YmprZDFnIiwiaHRtIjoiUE9TVCIsImh0dSI6Imh0dHBzOi8vYmFuay5leGFtcGxlL3RyYW5zZmVycyIsImlhdCI6MTc5MDAwMDAwMCwianRpIjoic2FtZSJ9.YRUKrz06yuiWnGEzD6mwJLarHalolYR-38Ci1PCtd2UQ3z3RYEqPLLaVADf0GxttelvEAkMPWx0Y9p05gxmrDg",
+     "method": "POST",
+     "url": "https://bank.example/transfers",
+     "action": "transfer.create",
+     "params": {
+      "from_account": "PL61109010140000071219812874",
+      "to_account": "DE89370400440532013000",
+      "amount": "4500.00",
+      "title": "Faktura INV-847 żółć"
+     },
+     "expect": "ok"
+    },
+    {
+     "kind": "action",
+     "token": "eyJhbGciOiJFZERTQSIsImtpZCI6InZlYy1raWQtMSIsInR5cCI6Ind3Zy1hY3Rpb24rand0In0.eyJhY3Rpb24iOiJ0cmFuc2Zlci5jcmVhdGUiLCJhdWQiOiJjb3JlLXBheW1lbnRzIiwiY25mIjp7ImprdCI6Ii1nZVNnV1l6WXhmZ0pFMkdWU2d3Sk1BQXdReFZ3MnBaMFBXMFdheF9qQUUifSwiZXhwIjoxNzkwMDAwMDMwLCJpYXQiOjE3OTAwMDAwMDAsImlzcyI6Ind3Z2F0ZXdheS12ZWN0b3JzIiwianRpIjoidG9rLTIiLCJuYmYiOjE3OTAwMDAwMDAsInBhcmFtc19oYXNoIjoiNDkyYzdiYWY0MjI3NGYwM2JhMGM0Nzk4ZmZhZGViMjE5Nzg4NTczMTYzNGVjMWMyNTY1Y2JiZmQwNjA5NzlkYiIsInBsYW5faWQiOiJwbGFuLTEiLCJyaXNrX2xldmVsIjoibWVkaXVtIiwic3RlcF9pZCI6InMyIiwic3ViIjoiYWdlbnQtMSJ9.8THV63Lg0XL7XtN4EkHdMnsfY9FFNeMUkxtmm0AReU1j98tdxa1sfb10umpD0_RMRi5sTHotZjcJl4MXadcOBQ",
+     "proof": "eyJhbGciOiJFZERTQSIsImp3ayI6eyJjcnYiOiJFZDI1NTE5Iiwia3R5IjoiT0tQIiwieCI6InVaTi1NaU53dzY0cVNINndnaF9qb0xmeFhUTTJFbW5Zcm15NVhXM0VtNlUifSwidHlwIjoid3dnLXByb29mK2p3dCJ9.eyJhdGgiOiI4RjZkY291TGFMSkQzSjNzTk5ydk1IeG50RFlRNF9idEpfNlFSamVzQXpFIiwiaHRtIjoiUE9TVCIsImh0dSI6Imh0dHBzOi8vYmFuay5leGFtcGxlL3RyYW5zZmVycyIsImlhdCI6MTc5MDAwMDAwMCwianRpIjoic2FtZSJ9.xKtR_X4AOfocv505fwkBF1LNPhUYvh7IlqL25HJ1wAdOYRTeG_whFvfng1fa46eeBaBBzX7ZbtwGyot7-MvHCg",
+     "method": "POST",
+     "url": "https://bank.example/transfers",
+     "action": "transfer.create",
+     "params": {
+      "from_account": "PL61109010140000071219812874",
+      "to_account": "DE89370400440532013000",
+      "amount": "4500.00",
+      "title": "Faktura INV-847 żółć"
+     },
+     "expect": "proof_replay"
+    }
+   ]
+  },
+  {
+   "name": "revoked",
+   "calls": [
+    {
+     "kind": "action",
+     "token": "eyJhbGciOiJFZERTQSIsImtpZCI6InZlYy1raWQtMSIsInR5cCI6Ind3Zy1hY3Rpb24rand0In0.eyJhY3Rpb24iOiJ0cmFuc2Zlci5jcmVhdGUiLCJhdWQiOiJjb3JlLXBheW1lbnRzIiwiY25mIjp7ImprdCI6Ii1nZVNnV1l6WXhmZ0pFMkdWU2d3Sk1BQXdReFZ3MnBaMFBXMFdheF9qQUUifSwiZXhwIjoxNzkwMDAwMDMwLCJpYXQiOjE3OTAwMDAwMDAsImlzcyI6Ind3Z2F0ZXdheS12ZWN0b3JzIiwianRpIjoicmV2b2tlZC0xIiwibmJmIjoxNzkwMDAwMDAwLCJwYXJhbXNfaGFzaCI6IjQ5MmM3YmFmNDIyNzRmMDNiYTBjNDc5OGZmYWRlYjIxOTc4ODU3MzE2MzRlYzFjMjU2NWNiYmZkMDYwOTc5ZGIiLCJyaXNrX2xldmVsIjoibWVkaXVtIiwic3ViIjoiYWdlbnQtMSJ9.YAb-FV8ctqFo2hmzh2cFS1SOVL9U2Nmi4a3gzdDn9EeAaklBGvkgSCRg-QlBwEBaNRk0vgUM9mdHcScrO_-YAQ",
+     "proof": null,
+     "method": "POST",
+     "url": "https://bank.example/transfers",
+     "action": "transfer.create",
+     "params": {
+      "from_account": "PL61109010140000071219812874",
+      "to_account": "DE89370400440532013000",
+      "amount": "4500.00",
+      "title": "Faktura INV-847 żółć"
+     },
+     "expect": "revoked"
+    }
+   ]
+  },
+  {
+   "name": "suspended agent",
+   "calls": [
+    {
+     "kind": "action",
+     "token": "eyJhbGciOiJFZERTQSIsImtpZCI6InZlYy1raWQtMSIsInR5cCI6Ind3Zy1hY3Rpb24rand0In0.eyJhY3Rpb24iOiJ0cmFuc2Zlci5jcmVhdGUiLCJhdWQiOiJjb3JlLXBheW1lbnRzIiwiY25mIjp7ImprdCI6Ii1nZVNnV1l6WXhmZ0pFMkdWU2d3Sk1BQXdReFZ3MnBaMFBXMFdheF9qQUUifSwiZXhwIjoxNzkwMDAwMDMwLCJpYXQiOjE3OTAwMDAwMDAsImlzcyI6Ind3Z2F0ZXdheS12ZWN0b3JzIiwianRpIjoidG9rLTEiLCJuYmYiOjE3OTAwMDAwMDAsInBhcmFtc19oYXNoIjoiNDkyYzdiYWY0MjI3NGYwM2JhMGM0Nzk4ZmZhZGViMjE5Nzg4NTczMTYzNGVjMWMyNTY1Y2JiZmQwNjA5NzlkYiIsInJpc2tfbGV2ZWwiOiJtZWRpdW0iLCJzdWIiOiJhZ2VudC1iYWQifQ.KdiwOXHqlXgMNTzmU86V5-RGQp0fsBGZhiirSNxar2TxYRgW2vLiR6GXpqffRsxbvBA4OmwmoGHntlEDSxDLAg",
+     "proof": null,
+     "method": "POST",
+     "url": "https://bank.example/transfers",
+     "action": "transfer.create",
+     "params": {
+      "from_account": "PL61109010140000071219812874",
+      "to_account": "DE89370400440532013000",
+      "amount": "4500.00",
+      "title": "Faktura INV-847 żółć"
+     },
+     "expect": "agent_revoked"
+    }
+   ]
+  },
+  {
+   "name": "risk above tolerance",
+   "calls": [
+    {
+     "kind": "action",
+     "token": "eyJhbGciOiJFZERTQSIsImtpZCI6InZlYy1raWQtMSIsInR5cCI6Ind3Zy1hY3Rpb24rand0In0.eyJhY3Rpb24iOiJ0cmFuc2Zlci5jcmVhdGUiLCJhdWQiOiJjb3JlLXBheW1lbnRzIiwiY25mIjp7ImprdCI6Ii1nZVNnV1l6WXhmZ0pFMkdWU2d3Sk1BQXdReFZ3MnBaMFBXMFdheF9qQUUifSwiZXhwIjoxNzkwMDAwMDMwLCJpYXQiOjE3OTAwMDAwMDAsImlzcyI6Ind3Z2F0ZXdheS12ZWN0b3JzIiwianRpIjoidG9rLTEiLCJuYmYiOjE3OTAwMDAwMDAsInBhcmFtc19oYXNoIjoiNDkyYzdiYWY0MjI3NGYwM2JhMGM0Nzk4ZmZhZGViMjE5Nzg4NTczMTYzNGVjMWMyNTY1Y2JiZmQwNjA5NzlkYiIsInJpc2tfbGV2ZWwiOiJjcml0aWNhbCIsInN1YiI6ImFnZW50LTEifQ.wNOMDWMKqroGmpc1tvvxQDob_ewXXRPQhGSyxpUvtpWFuRhY9f6UCQdJSCmWUVO-mUjseAJuuVI_4Kf77HefAw",
+     "proof": null,
+     "method": "POST",
+     "url": "https://bank.example/transfers",
+     "action": "transfer.create",
+     "params": {
+      "from_account": "PL61109010140000071219812874",
+      "to_account": "DE89370400440532013000",
+      "amount": "4500.00",
+      "title": "Faktura INV-847 żółć"
+     },
+     "expect": "risk_tolerance"
+    }
+   ]
+  },
+  {
+   "name": "unbound token",
+   "calls": [
+    {
+     "kind": "action",
+     "token": "eyJhbGciOiJFZERTQSIsImtpZCI6InZlYy1raWQtMSIsInR5cCI6Ind3Zy1hY3Rpb24rand0In0.eyJhY3Rpb24iOiJ0cmFuc2Zlci5jcmVhdGUiLCJhdWQiOiJjb3JlLXBheW1lbnRzIiwiZXhwIjoxNzkwMDAwMDMwLCJpYXQiOjE3OTAwMDAwMDAsImlzcyI6Ind3Z2F0ZXdheS12ZWN0b3JzIiwianRpIjoidSIsIm5iZiI6MTc5MDAwMDAwMCwicGFyYW1zX2hhc2giOiI0OTJjN2JhZjQyMjc0ZjAzYmEwYzQ3OThmZmFkZWIyMTk3ODg1NzMxNjM0ZWMxYzI1NjVjYmJmZDA2MDk3OWRiIiwicmlza19sZXZlbCI6ImxvdyIsInN1YiI6ImFnZW50LTEifQ.b0SNkpQpBVwnSzaOx1a2t3bUdw5kHRjVAU7ULqtTfDtOV9W4CjXjg45lhsDZI2vrZIb7z_3ZTY-OD2TjRB2zDw",
+     "proof": null,
+     "method": "POST",
+     "url": "https://bank.example/transfers",
+     "action": "transfer.create",
+     "params": {
+      "from_account": "PL61109010140000071219812874",
+      "to_account": "DE89370400440532013000",
+      "amount": "4500.00",
+      "title": "Faktura INV-847 żółć"
+     },
+     "expect": "pop_required"
+    }
+   ]
+  },
+  {
+   "name": "malformed",
+   "calls": [
+    {
+     "kind": "action",
+     "token": "not.a-token",
+     "proof": null,
+     "method": "POST",
+     "url": "https://bank.example/transfers",
+     "action": "transfer.create",
+     "params": {
+      "from_account": "PL61109010140000071219812874",
+      "to_account": "DE89370400440532013000",
+      "amount": "4500.00",
+      "title": "Faktura INV-847 żółć"
+     },
+     "expect": "malformed_token"
+    }
+   ]
+  },
+  {
+   "name": "data access ok",
+   "calls": [
+    {
+     "kind": "data",
+     "token": "eyJhbGciOiJFZERTQSIsImtpZCI6InZlYy1raWQtMSIsInR5cCI6Ind3Zy1kYXRhK2p3dCJ9.eyJhdWQiOiJjb3JlLXBheW1lbnRzIiwiY25mIjp7ImprdCI6Ii1nZVNnV1l6WXhmZ0pFMkdWU2d3Sk1BQXdReFZ3MnBaMFBXMFdheF9qQUUifSwiY29sdW1ucyI6eyJhY2NvdW50cyI6WyJpZCIsIm93bmVyIl19LCJleHAiOjE3OTAwMDAwMzAsImlhdCI6MTc5MDAwMDAwMCwiaXNzIjoid3dnYXRld2F5LXZlY3RvcnMiLCJqdGkiOiJkMSIsIm5iZiI6MTc5MDAwMDAwMCwicmlza19sZXZlbCI6Im1lZGl1bSIsInJvd19maWx0ZXJzIjp7ImFjY291bnRzIjp7Im93bmVyIjoiQWxhIn19LCJzdWIiOiJhZ2VudC0xIiwidGFibGVzIjpbImFjY291bnRzIl19.znYYp4CBCsIOIXDFWuBaI8hR4H5xOgeqWB8GhAVQ8xy5T1y_Ut6JmLhr6KsXsfHOTSkfxtQLv5tZBiOhm8PBCA",
+     "proof": "eyJhbGciOiJFZERTQSIsImp3ayI6eyJjcnYiOiJFZDI1NTE5Iiwia3R5IjoiT0tQIiwieCI6InVaTi1NaU53dzY0cVNINndnaF9qb0xmeFhUTTJFbW5Zcm15NVhXM0VtNlUifSwidHlwIjoid3dnLXByb29mK2p3dCJ9.eyJhdGgiOiJKb0pPaHNhZ3c5OFBucDNtdXREMEFHTkUzWTNlRkt5OTFwTDZEUlBEcTE4IiwiaHRtIjoiR0VUIiwiaHR1IjoiaHR0cHM6Ly9iYW5rLmV4YW1wbGUvYWNjb3VudHMiLCJpYXQiOjE3OTAwMDAwMDAsImp0aSI6InAtMSJ9.DIJFrMbEx8iRatetfsXe-JLiGC1UE-aSIRQw3hDVpc6vR0bbLILcCm5YFNsxpnVxXTb7aKLUmAkLPHuO8y7nDQ",
+     "method": "GET",
+     "url": "https://bank.example/accounts",
+     "table": "accounts",
+     "expect": "ok",
+     "rows": [
+      {
+       "id": 1,
+       "owner": "Ala",
+       "balance": "1.00"
+      },
+      {
+       "id": 2,
+       "owner": "Ola",
+       "balance": "2.00"
+      }
+     ],
+     "scoped": [
+      {
+       "id": 1,
+       "owner": "Ala"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "name": "data table not allowed",
+   "calls": [
+    {
+     "kind": "data",
+     "token": "eyJhbGciOiJFZERTQSIsImtpZCI6InZlYy1raWQtMSIsInR5cCI6Ind3Zy1kYXRhK2p3dCJ9.eyJhdWQiOiJjb3JlLXBheW1lbnRzIiwiY25mIjp7ImprdCI6Ii1nZVNnV1l6WXhmZ0pFMkdWU2d3Sk1BQXdReFZ3MnBaMFBXMFdheF9qQUUifSwiY29sdW1ucyI6eyJhY2NvdW50cyI6WyJpZCIsIm93bmVyIl19LCJleHAiOjE3OTAwMDAwMzAsImlhdCI6MTc5MDAwMDAwMCwiaXNzIjoid3dnYXRld2F5LXZlY3RvcnMiLCJqdGkiOiJkMSIsIm5iZiI6MTc5MDAwMDAwMCwicmlza19sZXZlbCI6Im1lZGl1bSIsInJvd19maWx0ZXJzIjp7ImFjY291bnRzIjp7Im93bmVyIjoiQWxhIn19LCJzdWIiOiJhZ2VudC0xIiwidGFibGVzIjpbImFjY291bnRzIl19.znYYp4CBCsIOIXDFWuBaI8hR4H5xOgeqWB8GhAVQ8xy5T1y_Ut6JmLhr6KsXsfHOTSkfxtQLv5tZBiOhm8PBCA",
+     "proof": "eyJhbGciOiJFZERTQSIsImp3ayI6eyJjcnYiOiJFZDI1NTE5Iiwia3R5IjoiT0tQIiwieCI6InVaTi1NaU53dzY0cVNINndnaF9qb0xmeFhUTTJFbW5Zcm15NVhXM0VtNlUifSwidHlwIjoid3dnLXByb29mK2p3dCJ9.eyJhdGgiOiJKb0pPaHNhZ3c5OFBucDNtdXREMEFHTkUzWTNlRkt5OTFwTDZEUlBEcTE4IiwiaHRtIjoiR0VUIiwiaHR1IjoiaHR0cHM6Ly9iYW5rLmV4YW1wbGUvb3BzIiwiaWF0IjoxNzkwMDAwMDAwLCJqdGkiOiJwLTEifQ.9yhKIZmn9P54N95M8wm8njgFV10qjeFbz-gmx7jcOcxStnDmPlLXjGB6MgcCiL8OJsS8_gTz-CU96HdHvCgPDw",
+     "method": "GET",
+     "url": "https://bank.example/ops",
+     "table": "operations",
+     "expect": "table_not_allowed"
+    }
+   ]
+  }
+ ]
+}

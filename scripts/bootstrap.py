@@ -9,6 +9,25 @@ sys.path.insert(0, str(ROOT))
 
 from gateway.store import Store
 
+sys.path.insert(0, str(ROOT / "sdk" / "python"))
+from wwg_sdk import AgentClient  # noqa: E402
+
+KEY_DIR = Path(os.environ.get("WWG_DEMO_KEYS", ROOT / ".demo_keys"))
+
+
+def demo_key(name: str) -> AgentClient:
+    """Development keys for the demo agent and employees (gitignored). Real deployments
+    generate keys inside the agent runtime / employee device and register only public keys."""
+    KEY_DIR.mkdir(parents=True, exist_ok=True)
+    path = KEY_DIR / f"{name}.pem"
+    if path.exists():
+        key = AgentClient.load_key(path.read_bytes())
+    else:
+        key = AgentClient.generate_key()
+        path.write_bytes(AgentClient.dump_key(key))
+        os.chmod(path, 0o600)
+    return AgentClient(name, key)
+
 
 state_path = Path(os.environ.get("GATEWAY_STATE", ROOT / "data" / "state.json"))
 store = Store(state_path)
@@ -121,19 +140,36 @@ store.put("data_policies", "accounts-read-basic", {
     "id": "accounts-read-basic",
     "description": "Read basic account data only",
     "tables": ["accounts"],
-    "columns": {"accounts": ["id", "owner_id", "balance", "currency"]},
-    "row_filters": {"accounts": {"tenant_id": "subject.tenant_id"}},
+    "columns": {"accounts": ["id", "owner", "balance"]},
+    "row_filters": {},
     "ttl_seconds": 300,
 })
 
+store.put("data_policies", "accounts-own-customer", {
+    "id": "accounts-own-customer",
+    "description": "Only the accounts of the customer the employee is serving",
+    "tables": ["accounts", "operations"],
+    "columns": {"accounts": ["id", "owner", "balance"]},
+    "row_filters": {"accounts": {"owner": "subject.customer_name"}},
+    "ttl_seconds": 300,
+})
+
+agent = demo_key("agent-demo")
 store.put("agents", "agent-demo", {
     "id": "agent-demo",
     "name": "Demo Agent",
-    "api_key": "demo-agent-key-please-change",
+    "public_key": agent.jwk["x"],
     "active": True,
     "allowed_actions": ["transfer.create", "user.create", "account.create", "deposit.create", "account.close", "users.select", "customer.read", "records.delete"],
-    "allowed_data_policies": ["accounts-read-basic"],
+    "allowed_data_policies": ["accounts-read-basic", "accounts-own-customer"],
 })
+
+for employee_id, name, role in (("emp-operator", "Anna Operator", "operator"), ("emp-admin", "Marek Admin", "admin")):
+    employee = demo_key(employee_id)
+    store.put("employees", employee_id, {
+        "id": employee_id, "name": name, "role": role, "public_key": employee.jwk["x"],
+        "attributes": {"customer_name": "Jane Agent"}, "active": True,
+    })
 
 store.state["settings"]["risk_tolerance"] = "high"
 store.state["settings"].setdefault("system_risk_tolerances", {})
@@ -142,5 +178,5 @@ store.save()
 
 store.audit({"decision": "admin_change", "op": "bootstrap"})
 print(f"Bootstrapped gateway state at {state_path}")
-print("Agent: agent-demo")
-print("Agent key: demo-agent-key-please-change")
+print("Agent: agent-demo (Ed25519 key in .demo_keys/agent-demo.pem)")
+print("Employees: emp-operator (operator), emp-admin (admin) — keys in .demo_keys/")

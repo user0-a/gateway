@@ -1,0 +1,10 @@
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
+# runtime state and secrets — never commit
+data/state.json
+data/state.json.tmp
+data/keys/
+.demo_keys/
+*.pem
