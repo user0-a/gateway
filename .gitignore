@@ -8,3 +8,5 @@ data/state.json.tmp
 data/keys/
 .demo_keys/
 *.pem
+# Maven build output
+target/
