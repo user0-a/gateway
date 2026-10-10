@@ -1,0 +1,16 @@
+server:
+  port: 8002
+
+spring:
+  datasource:
+    # In-memory for the demo; a shared database in a cluster (that is what makes single use cluster-wide).
+    url: jdbc:h2:mem:payments;DB_CLOSE_DELAY=-1
+  sql:
+    init:
+      mode: always
+
+wwgateway:
+  gateway-url: ${WWG_GATEWAY_URL:http://127.0.0.1:8001}
+  issuer: ${WWG_ISSUER:wwgateway-dev}
+  audience: core-payments
+  replay-store: jdbc

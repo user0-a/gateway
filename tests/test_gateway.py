@@ -1,378 +1,146 @@
+"""Functional behaviour of the gateway: policies, risk, blocks, plans, extensions, admin."""
 from __future__ import annotations
 
 from pathlib import Path
 
-from fastapi.testclient import TestClient
-
-from gateway.app import create_app
-from gateway.store import Store
+from helpers import ADMIN, World
 
 
-def test_authorize_validate_and_revoke(tmp_path: Path) -> None:
-    store = Store(tmp_path / "state.json")
-    store.put("actions", "transfer.create", {
-        "id": "transfer.create",
-        "description": "",
-        "service": "mini-bank",
-        "operation": "transfer.create",
-        "ttl_seconds": 60,
-        "required_fields": ["amount"],
-        "max_amount": 1000,
-        "allowed_roles": ["operator"],
-        "base_risk": "medium",
-        "risk_rules": [],
-    })
-    store.put("data_policies", "accounts", {
-        "id": "accounts",
-        "description": "",
-        "tables": ["accounts"],
-        "columns": {"accounts": ["id"]},
-        "row_filters": {},
-        "ttl_seconds": 300,
-    })
-    store.put("agents", "agent-1", {
-        "id": "agent-1",
-        "name": "Agent 1",
-        "api_key": "secret-agent-key-123",
-        "active": True,
-        "allowed_actions": ["transfer.create"],
-        "allowed_data_policies": ["accounts"],
-    })
-
-    client = TestClient(create_app(store))
-    response = client.post(
-        "/v1/authorize",
-        headers={"x-agent-id": "agent-1", "x-agent-key": "secret-agent-key-123"},
-        json={"action": "transfer.create", "params": {"amount": 10}, "data_policy": "accounts", "subject": {"role": "operator"}},
-    )
-    assert response.status_code == 200
-    tokens = response.json()
-    assert tokens["decision"] == "allow"
-    assert tokens["action_token"]
-    assert tokens["data_access_token"]
-
-    validation = client.post("/v1/validate/action", json={"token": tokens["action_token"]})
-    assert validation.status_code == 200
-    assert validation.json()["claims"]["action"] == "transfer.create"
-
-    revoked = client.post("/admin/tokens/revoke", headers={"x-admin-key": "dev-admin-key"}, json={"token": tokens["action_token"], "reason": "test"})
-    assert revoked.status_code == 200
-
-    inactive = client.post("/v1/introspect", json={"token": tokens["action_token"], "token_type": "action"})
-    assert inactive.json() == {"active": False, "reason": "revoked"}
+def test_low_risk_unrestricted_action_is_allowed_directly(tmp_path: Path) -> None:
+    w = World(tmp_path)
+    r = w.agent_post("/v1/authorize", {"action": "users.select", "params": {"limit": 10}})
+    assert r.status_code == 200, r.text
+    body = r.json()
+    assert body["decision"] == "allow" and body["risk_level"] == "low" and body["sender_constrained"] is True
 
 
-def test_batch_authorize_blocks_high_risk_in_low_mode(tmp_path: Path) -> None:
-    store = Store(tmp_path / "state.json")
-    store.state["settings"]["risk_tolerance"] = "low"
-    store.put("actions", "users.select", {
-        "id": "users.select",
-        "description": "",
-        "service": "mini-bank",
-        "operation": "select.users",
-        "ttl_seconds": 60,
-        "required_fields": ["limit"],
-        "max_amount": None,
-        "allowed_roles": ["operator"],
-        "base_risk": "low",
-        "risk_rules": [{"field": "limit", "gte": 100, "risk": "medium"}],
-    })
-    store.put("actions", "records.delete", {
-        "id": "records.delete",
-        "description": "",
-        "service": "mini-bank",
-        "operation": "delete.records",
-        "ttl_seconds": 60,
-        "required_fields": ["record_count"],
-        "max_amount": None,
-        "allowed_roles": ["operator"],
-        "base_risk": "medium",
-        "risk_rules": [{"field": "record_count", "gte": 100, "risk": "high"}],
-    })
-    store.put("agents", "agent-1", {
-        "id": "agent-1",
-        "name": "Agent 1",
-        "api_key": "secret-agent-key-123",
-        "active": True,
-        "allowed_actions": ["users.select", "records.delete"],
-        "allowed_data_policies": [],
-    })
-
-    client = TestClient(create_app(store))
-    response = client.post(
-        "/v1/authorize/batch",
-        headers={"x-agent-id": "agent-1", "x-agent-key": "secret-agent-key-123"},
-        json={"actions": [
-            {"action": "users.select", "params": {"limit": 10}, "subject": {"role": "operator"}},
-            {"action": "records.delete", "params": {"record_count": 300}, "subject": {"role": "operator"}},
-        ]},
-    )
-
-    assert response.status_code == 200
-    body = response.json()
-    assert body["allowed"] == 1
-    assert body["denied"] == 1
-    assert body["results"][0]["decision"] == "allow"
-    assert body["results"][0]["risk_level"] == "low"
-    assert body["results"][1]["decision"] == "deny"
-    assert body["results"][1]["risk_level"] == "high"
-    assert body["results"][1]["risk_tolerance"] == "low"
+def test_role_restricted_action_requires_employee_approved_plan(tmp_path: Path) -> None:
+    w = World(tmp_path)
+    r = w.agent_post("/v1/authorize", {"action": "transfer.create", "params": {"from_account": 1, "to_account": 2, "amount": "10"}, "subject": {"employee_id": "emp-anna", "role": "operator"}})
+    assert r.status_code == 403
+    assert r.json()["detail"]["reason"] == "employee_approved_plan_required"
 
 
-def test_admin_block_rule_denies_matching_action(tmp_path: Path) -> None:
-    store = Store(tmp_path / "state.json")
-    store.put("actions", "users.select", {
-        "id": "users.select",
-        "description": "",
-        "service": "mini-bank",
-        "operation": "select.users",
-        "ttl_seconds": 60,
-        "required_fields": ["limit"],
-        "max_amount": None,
-        "allowed_roles": ["operator"],
-        "base_risk": "low",
-        "risk_rules": [],
-    })
-    store.put("agents", "agent-1", {
-        "id": "agent-1",
-        "name": "Agent 1",
-        "api_key": "secret-agent-key-123",
-        "active": True,
-        "allowed_actions": ["users.select"],
-        "allowed_data_policies": [],
-    })
-    client = TestClient(create_app(store))
-
-    block = client.post("/admin/blocks", headers={"x-admin-key": "dev-admin-key"}, json={"id": "block-user-select", "action": "users.select", "reason": "maintenance"})
-    assert block.status_code == 200
-
-    response = client.post(
-        "/v1/authorize",
-        headers={"x-agent-id": "agent-1", "x-agent-key": "secret-agent-key-123"},
-        json={"action": "users.select", "params": {"limit": 10}, "subject": {"role": "operator"}},
-    )
-    assert response.status_code == 403
-    assert response.json()["detail"]["reason"] == "maintenance"
+def test_agent_cannot_self_assert_a_subject_or_role(tmp_path: Path) -> None:
+    w = World(tmp_path)
+    # no employee at all -> the role cannot be verified
+    r = w.agent_post("/v1/authorize", {"action": "records.delete", "params": {"record_count": 5}, "subject": {"role": "admin"}})
+    assert r.json()["detail"]["reason"] == "subject_not_verified"
+    # agent claims admin for an operator employee -> mismatch
+    r = w.agent_post("/v1/authorize", {"action": "records.delete", "params": {"record_count": 5}, "subject": {"employee_id": "emp-anna", "role": "admin"}})
+    assert r.json()["detail"]["reason"] == "subject_role_mismatch"
+    # inside a plan the role always comes from the directory: operator cannot get an admin-only step
+    r = w.agent_post("/v1/plans", {"plan_id": "p-role", "goal": "cleanup", "subject": {"employee_id": "emp-anna", "role": "admin"}, "steps": [{"id": "s1", "action": "records.delete", "params": {"record_count": 5}}]})
+    assert r.json()["decision"] == "rejected"
+    assert r.json()["denied_steps"][0]["reason"] == "subject role not allowed"
 
 
-def test_lowering_risk_tolerance_invalidates_existing_token(tmp_path: Path) -> None:
-    store = Store(tmp_path / "state.json")
-    store.state["settings"]["risk_tolerance"] = "high"
-    store.put("actions", "records.delete", {
-        "id": "records.delete",
-        "description": "",
-        "service": "mini-bank",
-        "operation": "delete.records",
-        "ttl_seconds": 60,
-        "required_fields": ["record_count"],
-        "max_amount": None,
-        "allowed_roles": ["admin"],
-        "base_risk": "medium",
-        "risk_rules": [{"field": "record_count", "gte": 100, "risk": "high"}],
-    })
-    store.put("agents", "agent-1", {
-        "id": "agent-1",
-        "name": "Agent 1",
-        "api_key": "secret-agent-key-123",
-        "active": True,
-        "allowed_actions": ["records.delete"],
-        "allowed_data_policies": [],
-    })
-    client = TestClient(create_app(store))
-    issued = client.post(
-        "/v1/authorize",
-        headers={"x-agent-id": "agent-1", "x-agent-key": "secret-agent-key-123"},
-        json={"action": "records.delete", "params": {"record_count": 300}, "subject": {"role": "admin"}},
-    )
-    assert issued.status_code == 200
-    token = issued.json()["action_token"]
-
-    update = client.put("/admin/settings", headers={"x-admin-key": "dev-admin-key"}, json={"risk_tolerance": "low"})
-    assert update.status_code == 200
-
-    validation = client.post("/v1/validate/action", json={"token": token})
-    assert validation.status_code == 401
-    assert validation.json()["detail"] == "token revoked by current risk tolerance"
+def test_block_rule_denies_matching_action(tmp_path: Path) -> None:
+    w = World(tmp_path)
+    w.http.post("/admin/blocks", headers=ADMIN, json={"id": "no-select", "action": "users.select", "reason": "maintenance"})
+    r = w.agent_post("/v1/authorize", {"action": "users.select", "params": {"limit": 10}})
+    assert r.status_code == 403 and r.json()["detail"]["reason"] == "maintenance"
 
 
-def test_system_risk_tolerance_can_be_stricter_than_global(tmp_path: Path) -> None:
-    store = Store(tmp_path / "state.json")
-    store.state["settings"]["risk_tolerance"] = "high"
-    store.put("actions", "records.delete", {
-        "id": "records.delete",
-        "description": "",
-        "service": "mini-bank",
-        "operation": "delete.records",
-        "ttl_seconds": 60,
-        "required_fields": ["record_count"],
-        "max_amount": None,
-        "allowed_roles": ["admin"],
-        "base_risk": "medium",
-        "risk_rules": [{"field": "record_count", "gte": 100, "risk": "high"}],
-    })
-    store.put("agents", "agent-1", {
-        "id": "agent-1",
-        "name": "Agent 1",
-        "api_key": "secret-agent-key-123",
-        "active": True,
-        "allowed_actions": ["records.delete"],
-        "allowed_data_policies": [],
-    })
-    client = TestClient(create_app(store))
-
-    update = client.put("/admin/systems/risk", headers={"x-admin-key": "dev-admin-key"}, json={"service": "mini-bank", "risk_tolerance": "low"})
-    assert update.status_code == 200
-
-    response = client.post(
-        "/v1/authorize",
-        headers={"x-agent-id": "agent-1", "x-agent-key": "secret-agent-key-123"},
-        json={"action": "records.delete", "params": {"record_count": 300}, "subject": {"role": "admin"}},
-    )
-    assert response.status_code == 403
-    detail = response.json()["detail"]
-    assert detail["risk_level"] == "high"
-    assert detail["risk_tolerance"] == "low"
+def test_batch_reports_each_decision(tmp_path: Path) -> None:
+    w = World(tmp_path)
+    w.http.put("/admin/settings", headers=ADMIN, json={"risk_tolerance": "low"})
+    r = w.agent_post("/v1/authorize/batch", {"actions": [{"action": "users.select", "params": {"limit": 10}}, {"action": "users.select", "params": {"limit": 500}}]})
+    body = r.json()
+    assert body["allowed"] == 1 and body["denied"] == 1
+    assert body["results"][1]["reason"] == "risk level exceeds gateway tolerance"
 
 
-def test_admin_ui_is_served(tmp_path: Path) -> None:
-    client = TestClient(create_app(Store(tmp_path / "state.json")))
-    response = client.get("/admin/ui")
-    assert response.status_code == 200
-    assert "Gateway Admin" in response.text
-    assert "/admin/systems/risk" in response.text
+def test_system_risk_tolerance_is_stricter_than_global(tmp_path: Path) -> None:
+    w = World(tmp_path)
+    w.http.put("/admin/systems/risk", headers=ADMIN, json={"service": "mini-bank", "risk_tolerance": "low"})
+    r = w.agent_post("/v1/authorize", {"action": "users.select", "params": {"limit": 500}})
+    assert r.json()["detail"]["risk_tolerance"] == "low"
 
 
-def test_plan_integrity_requires_extension_for_new_action(tmp_path: Path) -> None:
-    store = Store(tmp_path / "state.json")
-    for action_id, fields in {
-        "invoice.read": ["invoice_id"],
-        "customer.read": ["customer_id"],
-    }.items():
-        store.put("actions", action_id, {
-            "id": action_id,
-            "description": "",
-            "service": "mini-bank",
-            "operation": action_id,
-            "ttl_seconds": 60,
-            "required_fields": fields,
-            "max_amount": None,
-            "allowed_roles": ["admin"],
-            "base_risk": "medium",
-            "risk_rules": [],
-        })
-    store.put("agents", "agent-1", {
-        "id": "agent-1",
-        "name": "Agent 1",
-        "api_key": "secret-agent-key-123",
-        "active": True,
-        "allowed_actions": ["invoice.read", "customer.read"],
-        "allowed_data_policies": [],
-    })
-    client = TestClient(create_app(store))
-    headers = {"x-agent-id": "agent-1", "x-agent-key": "secret-agent-key-123"}
+def test_plan_is_not_usable_before_employee_approval(tmp_path: Path) -> None:
+    w = World(tmp_path)
+    r = w.agent_post("/v1/plans", {"plan_id": "p1", "goal": "pay", "subject": {"employee_id": "emp-anna"}, "steps": [{"id": "s1", "action": "customer.read", "params": {"customer_id": "c-1"}}]})
+    created = r.json()
+    assert created["decision"] == "requires_approval" and "action_token" not in str(created)
+    t = w.agent_post("/v1/authorize", {"action": "customer.read", "params": {"customer_id": "c-1"}, "plan_id": "p1", "step_id": "s1"})
+    assert t.json()["detail"]["reason"] == "plan_not_approved"
 
-    plan = client.post("/v1/plans/authorize", headers=headers, json={
-        "plan_id": "plan-847",
-        "goal": "Pay invoice INV-847",
-        "subject": {"role": "admin"},
-        "steps": [{"id": "s1", "action": "invoice.read", "params": {"invoice_id": "INV-847"}}],
-    })
-    assert plan.status_code == 200
-    plan_hash = plan.json()["plan_hash"]
 
-    outside = client.post("/v1/authorize", headers=headers, json={
-        "action": "customer.read",
-        "params": {"customer_id": "CUST-1"},
-        "subject": {"role": "admin"},
-        "plan_id": "plan-847",
-        "step_id": "s2",
-    })
-    assert outside.status_code == 403
+def test_plan_requires_known_employee_owner(tmp_path: Path) -> None:
+    w = World(tmp_path)
+    r = w.agent_post("/v1/plans", {"plan_id": "p1", "goal": "pay", "subject": {"role": "admin"}, "steps": [{"id": "s1", "action": "users.select", "params": {"limit": 1}}]})
+    assert r.status_code == 400 and r.json()["detail"] == "plan_requires_active_employee_owner"
+
+
+def test_only_the_owner_can_approve_and_only_the_exact_hash(tmp_path: Path) -> None:
+    w = World(tmp_path)
+    created = w.agent_post("/v1/plans", {"plan_id": "p1", "goal": "pay", "subject": {"employee_id": "emp-anna"}, "steps": [{"id": "s1", "action": "customer.read", "params": {"customer_id": "c-1"}}]}).json()
+    wrong_employee = w.employee_post("/v1/plans/p1/approval", {"decision": "approve", "plan_hash": created["plan_hash"]}, w.marek)
+    assert wrong_employee.status_code == 403
+    wrong_hash = w.employee_post("/v1/plans/p1/approval", {"decision": "approve", "plan_hash": "0" * 64}, w.anna)
+    assert wrong_hash.status_code == 409 and wrong_hash.json()["detail"] == "plan_hash_mismatch"
+    unsigned = w.http.post("/v1/plans/p1/approval", headers={"x-employee-id": "emp-anna"}, json={"decision": "approve", "plan_hash": created["plan_hash"]})
+    assert unsigned.status_code == 401
+    ok = w.employee_post("/v1/plans/p1/approval", {"decision": "approve", "plan_hash": created["plan_hash"]}, w.anna)
+    assert ok.status_code == 200 and ok.json()["plan"]["status"] == "approved"
+
+
+def test_step_token_is_bound_to_plan_and_outside_actions_need_extension(tmp_path: Path) -> None:
+    w = World(tmp_path)
+    created = w.approved_plan()
+    step = {"id": "s2", "action": "transfer.create", "params": {"from_account": 1, "to_account": 2, "amount": "100.00"}}
+    token = w.step_token("plan-1", step)
+    assert token["decision"] == "allow" and token["expires_in"] == 30   # financial -> 30 s
+    claims = w.verifier().verify_action(token["action_token"], w.agent.proof("POST", "http://bank/transfers", token["action_token"]), method="POST", url="http://bank/transfers", action="transfer.create", params=step["params"])
+    assert claims["plan_hash"] == created["plan_hash"] and claims["step_id"] == "s2" and claims["act_for"] == "emp-anna"
+
+    outside = w.agent_post("/v1/authorize", {"action": "users.select", "params": {"limit": 10}, "plan_id": "plan-1", "step_id": "s9"})
     assert outside.json()["detail"]["reason"] == "outside_authorized_plan"
     assert outside.json()["detail"]["required"] == "request_plan_extension"
 
-    extension = client.post("/v1/plans/plan-847/extensions", headers=headers, json={
-        "reason": "Need customer data to validate invoice owner",
-        "step": {"id": "s2", "action": "customer.read", "params": {"customer_id": "CUST-1"}},
-    })
-    assert extension.status_code == 200
-    extension_id = extension.json()["extension_id"]
+    changed = w.agent_post("/v1/authorize", {"action": "transfer.create", "params": {**step["params"], "amount": "900.00"}, "plan_id": "plan-1", "step_id": "s2"})
+    assert changed.json()["detail"]["reason"] == "plan_step_mismatch"
 
-    decision = client.post(f"/admin/plans/extensions/{extension_id}/decision", headers={"x-admin-key": "dev-admin-key"}, json={"decision": "approve"})
-    assert decision.status_code == 200
-    assert decision.json()["plan"]["plan_hash"] != plan_hash
-
-    retry = client.post("/v1/authorize", headers=headers, json={
-        "action": "customer.read",
-        "params": {"customer_id": "CUST-1"},
-        "subject": {"role": "admin"},
-        "plan_id": "plan-847",
-        "step_id": "s2",
-    })
-    assert retry.status_code == 200
-    assert retry.json()["decision"] == "allow"
-
-    token_check = client.post("/v1/validate/action", json={"token": retry.json()["action_token"]})
-    claims = token_check.json()["claims"]
-    assert claims["plan_id"] == "plan-847"
-    assert claims["step_id"] == "s2"
-    assert claims["plan_hash"] == decision.json()["plan"]["plan_hash"]
+    foreign = w.agent_post("/v1/authorize", {"action": step["action"], "params": step["params"], "plan_id": "plan-1", "step_id": "s2"}, client=w.other_agent)
+    assert foreign.json()["detail"]["reason"] == "plan_belongs_to_another_agent"
 
 
-def test_employee_owner_can_approve_plan_extension(tmp_path: Path) -> None:
-    store = Store(tmp_path / "state.json")
-    for action_id, fields in {"users.select": ["limit"], "customer.read": ["customer_id"]}.items():
-        store.put("actions", action_id, {
-            "id": action_id,
-            "description": "",
-            "service": "mini-bank",
-            "operation": action_id,
-            "ttl_seconds": 60,
-            "required_fields": fields,
-            "max_amount": None,
-            "allowed_roles": ["admin"],
-            "base_risk": "medium",
-            "risk_rules": [],
-        })
-    store.put("agents", "agent-1", {
-        "id": "agent-1",
-        "name": "Agent 1",
-        "api_key": "secret-agent-key-123",
-        "active": True,
-        "allowed_actions": ["users.select", "customer.read"],
-        "allowed_data_policies": [],
-    })
-    client = TestClient(create_app(store))
-    agent_headers = {"x-agent-id": "agent-1", "x-agent-key": "secret-agent-key-123"}
+def test_plan_extension_needs_owner_signature(tmp_path: Path) -> None:
+    w = World(tmp_path)
+    w.approved_plan()
+    ext = w.agent_post("/v1/plans/plan-1/extensions", {"step": {"id": "s3", "action": "users.select", "params": {"limit": 5}}, "reason": "need customer list"})
+    assert ext.status_code == 200, ext.text
+    ext_id = ext.json()["extension_id"]
+    spoofed = w.http.post(f"/v1/plans/extensions/{ext_id}/employee-decision", headers={"x-employee-id": "emp-anna"}, json={"decision": "approve"})
+    assert spoofed.status_code == 401
+    not_owner = w.employee_post(f"/v1/plans/extensions/{ext_id}/employee-decision", {"decision": "approve"}, w.marek)
+    assert not_owner.status_code == 403
+    ok = w.employee_post(f"/v1/plans/extensions/{ext_id}/employee-decision", {"decision": "approve"}, w.anna)
+    assert ok.status_code == 200
+    token = w.agent_post("/v1/authorize", {"action": "users.select", "params": {"limit": 5}, "plan_id": "plan-1", "step_id": "s3"})
+    assert token.status_code == 200
 
-    plan = client.post("/v1/plans/authorize", headers=agent_headers, json={
-        "plan_id": "plan-employee-1",
-        "goal": "Handle employee-owned task",
-        "subject": {"role": "admin", "employee_id": "emp-123"},
-        "steps": [{"id": "s1", "action": "users.select", "params": {"limit": 10}}],
-    })
-    assert plan.status_code == 200
 
-    extension = client.post("/v1/plans/plan-employee-1/extensions", headers=agent_headers, json={
-        "reason": "Employee asked to include customer data",
-        "step": {"id": "s2", "action": "customer.read", "params": {"customer_id": "CUST-99"}},
-    })
-    extension_id = extension.json()["extension_id"]
+def test_cancelled_plan_issues_no_more_tokens(tmp_path: Path) -> None:
+    w = World(tmp_path)
+    w.approved_plan()
+    w.http.post("/admin/plans/plan-1/cancel", headers=ADMIN)
+    r = w.agent_post("/v1/authorize", {"action": "customer.read", "params": {"customer_id": "c-1"}, "plan_id": "plan-1", "step_id": "s1"})
+    assert r.json()["detail"]["reason"] == "plan_cancelled"
 
-    wrong_employee = client.post(f"/v1/plans/extensions/{extension_id}/employee-decision", headers={"x-employee-id": "emp-999"}, json={"decision": "approve"})
-    assert wrong_employee.status_code == 403
 
-    approval = client.post(f"/v1/plans/extensions/{extension_id}/employee-decision", headers={"x-employee-id": "emp-123"}, json={"decision": "approve", "comment": "I requested this task"})
-    assert approval.status_code == 200
-    assert approval.json()["extension"]["decided_by_type"] == "employee"
-    assert approval.json()["extension"]["decided_by"] == "emp-123"
+def test_step_issuance_is_limited(tmp_path: Path) -> None:
+    w = World(tmp_path)
+    w.approved_plan()
+    step = {"id": "s1", "action": "customer.read", "params": {"customer_id": "c-1"}}
+    for _ in range(3):
+        w.step_token("plan-1", step)
+    r = w.agent_post("/v1/authorize", {"action": step["action"], "params": step["params"], "plan_id": "plan-1", "step_id": "s1"})
+    assert r.json()["detail"]["reason"] == "step_issuance_limit"
 
-    retry = client.post("/v1/authorize", headers=agent_headers, json={
-        "action": "customer.read",
-        "params": {"customer_id": "CUST-99"},
-        "subject": {"role": "admin", "employee_id": "emp-123"},
-        "plan_id": "plan-employee-1",
-        "step_id": "s2",
-    })
-    assert retry.status_code == 200
-    assert retry.json()["decision"] == "allow"
+
+def test_admin_ui_has_no_prefilled_secret(tmp_path: Path) -> None:
+    w = World(tmp_path)
+    page = w.http.get("/admin/ui")
+    assert page.status_code == 200 and 'value="dev-admin-key"' not in page.text
