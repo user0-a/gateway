@@ -24,7 +24,8 @@ import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 /** Enabled when {@code wwgateway.gateway-url} is set in a servlet web application. */
-@AutoConfiguration
+// After JdbcTemplateAutoConfiguration so @ConditionalOnBean(JdbcTemplate) sees its bean; by name, spring-jdbc is optional.
+@AutoConfiguration(afterName = "org.springframework.boot.autoconfigure.jdbc.JdbcTemplateAutoConfiguration")
 @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
 @ConditionalOnProperty(prefix = "wwgateway", name = "gateway-url")
 @EnableConfigurationProperties(WwGatewayProperties.class)
